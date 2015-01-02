@@ -12,5 +12,5 @@ CommandExe::~CommandExe()
 }
 void CommandExe::Run(const char* cmd)
 {
-
+    MessageBoxA(NULL, cmd, NULL, MB_OK);
 }
