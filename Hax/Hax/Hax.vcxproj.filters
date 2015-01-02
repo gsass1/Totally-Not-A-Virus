@@ -24,12 +24,18 @@
     <ClInclude Include="Hax.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Keylogger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Hax.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Keylogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
