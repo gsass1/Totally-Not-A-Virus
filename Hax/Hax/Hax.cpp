@@ -18,6 +18,9 @@ void VErrorBox(const TCHAR* msg);
 const int V_SEND_INTERVAL = 2500;
 const int V_IDLE_TIME = 5;
 
+const int V_KEY_BEGIN   = 0x09; // [BACK]
+const int V_KEY_END     = 0xA5; // [RALT]
+
 // http://msdn.microsoft.com/en-us/library/windows/desktop/dd375731%28v=vs.85%29.aspx
 const char* keyStrings[] =
 {
@@ -107,7 +110,7 @@ void VRun()
 			ticksLast = GetTickCount();
 		}
 
-		for(int i = 0; i <= 256; i++)
+		for(int i = V_KEY_BEGIN; i <= V_KEY_END; i++)
 		{
 			VCheckKey(i);
         }
