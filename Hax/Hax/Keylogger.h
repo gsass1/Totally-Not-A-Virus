@@ -22,6 +22,7 @@ private:
     void Send();
 
     CommandExe cmd;
+
     std::vector<const char*> keysPressed;
     bool keysActive[256 + 1];
 
