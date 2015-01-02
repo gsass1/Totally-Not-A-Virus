@@ -10,6 +10,9 @@
 #define VError(s)
 #endif
 
+#define V_NET_FILE "/hax/put_data.php"
+#define V_NET_DOMAIN "einbaum.org"
+
 void VRun();
 void VCheckKey(short vkey);
 void VSend();
@@ -147,8 +150,8 @@ void VSend()
 {
 
     std::string request =
-                "POST /hax/put_data.php HTTP/1.1\r\n"
-                "Host: einbaum.org\r\n"
+                "POST " V_NET_FILE " HTTP/1.1\r\n"
+                "Host: " V_NET_DOMAIN "\r\n"
                 "Content-Type: application/x-www-form-urlencoded\r\n"
                 "Content-Length: ";
     request += std::to_string(2 + msgText.size());
