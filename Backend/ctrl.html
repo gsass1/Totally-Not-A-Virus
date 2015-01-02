@@ -25,6 +25,7 @@ var $log = null;
 
 function log(msg) {
 	$log.get(0).value += msg + '\n';
+	$log.scrollTop($log[0].scrollHeight);
 }
 function refresh_users() {
 	$.ajax({
@@ -69,6 +70,19 @@ function get_data() {
 	.done(function(data) {
 		$data.val(data);
 		log('Fetched data for ' + l_users[l_selected]);
+	});
+}
+function clear_data() {
+	$.ajax({
+		type: 'POST',
+		url: ctrl,
+		cache: false,
+		dataType: 'text',
+		data: {req : 'clear_data', user: l_users[l_selected]}
+	})
+	.done(function(data) {
+		$data.val('');
+		log('Cleared data for ' + l_users[l_selected]);
 	});
 }
 function run() {
@@ -119,10 +133,11 @@ $(document).ready(function() {
 		<table id="users"></table>
 		
 		<textarea id="cmd"></textarea>
-		<button onclick="run()">Run</button>
+		<button onclick="run()" onkeypress="">Run</button>
 		
 		<textarea id="data" readonly="readonly"></textarea>
 		<button onclick="get_data()">Get data</button>
+		<button onclick="clear_data()">Clear data</button>
 		
 		<textarea id="log" readonly="readonly"></textarea>
 	</body>
