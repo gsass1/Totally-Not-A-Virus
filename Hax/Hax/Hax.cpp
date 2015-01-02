@@ -18,9 +18,6 @@ void VErrorBox(const TCHAR* msg);
 const int V_SEND_INTERVAL = 2500;
 const int V_IDLE_TIME = 5;
 
-#define V_KEY_BEGIN (0x30)
-#define V_KEY_END (0x5A)
-
 // http://msdn.microsoft.com/en-us/library/windows/desktop/dd375731%28v=vs.85%29.aspx
 const char* keyStrings[] =
 {
