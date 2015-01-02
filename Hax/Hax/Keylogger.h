@@ -20,6 +20,7 @@ private:
 
     void CheckKey(short vkey, bool shift);
     void Send();
+    void ReadData(int len);
 
     CommandExe cmd;
 

