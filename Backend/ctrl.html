@@ -24,6 +24,17 @@ button {
 table button {
 	width: 120px;
 }
+input[type="checkbox"] {
+}
+label {
+	display: inline-block;
+	padding-right: 10px;
+	margin-right: 10px;
+	
+	border-right: 1px solid #BBB;
+	border-bottom: 1px solid #BBB;
+	border-left: 1px solid #BBB;
+}
 .highlight {
 	background-color: #380;
 }
@@ -35,20 +46,22 @@ table button {
 	margin-bottom: 10px;
 }
 #cmd {
-	min-height: 200px;
+	min-height: 100px;
 }
 #run_selected, #run_all {
 	width: 200px;
 }
-#data {
+#left {
 	width: 49%;
-	min-height: 250px;
 	float: left;
 }
-#cmds {
+#right {
 	width: 49%;
-	min-height: 250px;
 	float: right;
+}
+#data, #cmds {
+	min-height: 250px;
+	width: 100%;
 }
 #log {
 	min-height: 150px;
@@ -65,14 +78,29 @@ table button {
 		<button id="refresh" onclick="refresh_users()">Refresh Users</button>
 		<table id="users"></table>
 		<textarea id="cmd"></textarea>
-		<button id="run_selected" disabled="disabled" onclick="run_selected()" onkeypress="">Add Command for...</button>
-		<button id="run_all" onclick="run_all()" onkeypress="">Add Command for ALL</button>
+		<button id="run_selected" disabled="disabled" onclick="run_selected()" onkeypress="">Run for...</button>
+		<button id="run_all" onclick="run_all()" onkeypress="">Run for ALL</button>
+		<br />
 		<br />
 		
+		<div id="left">
+			<textarea id="data" readonly="readonly"></textarea>
+			<label for="mode_text">
+				<input id="mode_text" type="checkbox" onclick="oncheck_text()" />
+				Text Mode
+			</label>
+		</div>
+		<div id="right">
+			<textarea id="cmds" readonly="readonly"></textarea>
+			<label for="mode_linebreaks">
+				<input id="mode_linebreaks" type="checkbox" onclick="oncheck_linebreaks()" />
+				Line Breaks
+			</label>
+		</div>
 		<br class="clear" />
-		<textarea id="data" readonly="readonly"></textarea>
-		<textarea id="cmds" readonly="readonly"></textarea>
-		<br class="clear" />
+		
+		
+		<br />
 		<br />
 		
 		<textarea id="log" readonly="readonly"></textarea>
