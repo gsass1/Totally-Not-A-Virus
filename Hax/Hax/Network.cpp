@@ -13,7 +13,7 @@ Network::Network() : bufLen(sizeof(buf))
 
 Network::~Network()
 {
-
+    WSACleanup();
 }
 
 std::string Network::SendPost(const char* msg, size_t len)
