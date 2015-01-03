@@ -1,6 +1,6 @@
 <?php
 
-error_reporting(E_ALL);
+//error_reporting(E_ALL);
 
 $dir_data = 'data';
 $dir_cmds = 'cmds';
@@ -17,7 +17,11 @@ function get_users($dir) {
 	$files = array_filter($files, function($f) {
 		return $f[0] != '.';
 	});
-	return array_values($files);
+	$users = array();
+	foreach ($files as $file) {
+		$users[] = array($file, date("F d Y H:i:s", filemtime($dir.'/'.$file)));
+	}
+	return $users;
 }
 function put_cmd($file, $cmd) {
 	file_put_contents($file, file_get_contents($file) . $cmd . ';');
@@ -44,6 +48,14 @@ else if ($req === 'clear_data') {
 	
 	file_put_contents($dir_data.'/'.$user, '');
 }
+else if ($req === 'del_data') {
+	isset_ordie('user');
+	$user = $_POST['user'];
+	check_user($dir_data, $user);
+	
+	unlink($dir_data.'/'.$user);
+	unlink($cmd_data.'/'.$user);
+}
 else if ($req === 'put_cmd') {
 	isset_ordie('user');
 	isset_ordie('cmd');
@@ -53,13 +65,27 @@ else if ($req === 'put_cmd') {
 	
 	put_cmd($dir_cmds.'/'.$user, $cmd);
 }
+else if ($req === 'get_cmd') {
+	isset_ordie('user');
+	$user = $_POST['user'];
+	check_user($dir_cmds, $user);
+	
+	echo file_get_contents($dir_cmds.'/'.$user);
+}
+else if ($req === 'clear_cmd') {
+	isset_ordie('user');
+	$user = $_POST['user'];
+	check_user($dir_cmds, $user);
+	
+	file_put_contents($dir_cmds.'/'.$user, '');
+}
 else if ($req === 'put_cmd_all') {
 	isset_ordie('cmd');
 	$cmd  = $_POST['cmd'];
 	
 	$users = get_users($dir_data);
 	foreach($users as $user) {
-		put_cmd($dir_cmds.'/'.$user, $cmd);
+		put_cmd($dir_cmds.'/'.$user[0], $cmd);
 	}
 }
 ?>

