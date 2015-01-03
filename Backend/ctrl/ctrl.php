@@ -2,8 +2,8 @@
 
 //error_reporting(E_ALL);
 
-$dir_data = 'data';
-$dir_cmds = 'cmds';
+$dir_data = '../data';
+$dir_cmds = '../cmds';
 
 function pv($var) {
 	if (!isset($_POST[$var])) die();
