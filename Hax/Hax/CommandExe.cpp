@@ -32,7 +32,16 @@ command_t commandDefs[] = {
             std::string fileArgs = join_at_index(args, " ");
             wchar_t dest[_MAX_PATH];
             mbstowcs(dest, fileArgs.c_str(), _MAX_PATH);
-            _wsystem(dest);
+
+            PROCESS_INFORMATION pi;
+            ZeroMemory(&pi, sizeof(pi));
+
+            STARTUPINFO si;
+            ZeroMemory(&si, sizeof(si));
+
+            si.cb = sizeof(si);
+
+            CreateProcess(NULL, dest, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
         }
     },
     {
