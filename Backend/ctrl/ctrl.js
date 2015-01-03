@@ -5,8 +5,14 @@ var l_users = [];
 var l_times = [];
 var l_selected = -1;
 
+var l_screenshots = [];
+
+var b_screenshots_shown = false;
+
 var $selected_user = null;
 var $users = null;
+var $screenshots = null;
+var $show_screenshots = null;
 var $cmd = null;
 var $cmds = null;
 var $data = null;
@@ -16,6 +22,24 @@ var $run_selected = null;
 var $mode_text = null;
 var $mode_color = null;
 var $mode_linebreaks = null;
+
+function show_screenshots() {
+	if (b_screenshots_shown) {
+		b_screenshots_shown = false;
+		$show_screenshots.text('Show Screenshots');
+		$('#container_top')
+			.css('whiteSpace', 'nowrap')
+			.css('overflow', 'hidden');
+		$screenshots.css('height', '100px');
+	} else {
+		b_screenshots_shown = true;
+		$show_screenshots.text('Hide Screenshots');
+		$('#container_top')
+			.css('whiteSpace', 'normal')
+			.css('overflow', 'visible');
+		$screenshots.css('height', 'auto');
+	}
+}
 
 function oncheck_text() {
 	select_user(l_selected);
@@ -174,6 +198,48 @@ function generic_request(index, req, success) {
 	})
 	.done(success);
 }
+function list_screenshots() {
+	$.ajax({
+		type: 'POST',
+		url: ctrl,
+		cache: false,
+		dataType: 'json',
+		data: {req : 'list_screenshots'}
+	})
+	.done(function(data) {
+		var oldnum = l_screenshots.length;
+		$.extend(l_screenshots, data);
+		var newnum = l_screenshots.length;
+		
+		log('Fetched ' + l_screenshots.length + ' screenshot names.');
+		
+		for (var i = oldnum; i < newnum; i++) {
+			var link = ctrl+'?s='+l_screenshots[i];
+			log('Loading new screenshot: ' + l_screenshots[i]);
+			$screenshots.prepend(
+				$('<span class="imgcontainer" id="img'+i+'"></span>').append(
+					$('<a></a>').attr('href', link).attr('target', '_blank')
+						.append($('<img></img>').attr('src', link))
+						.hide().fadeIn('slow'),
+					$('<button class="delbutton" onclick="del_screenshot('+i+')">X</button>')));
+			
+		}
+	});
+}
+function del_screenshot(index) {
+	$.ajax({
+		type: 'POST',
+		url: ctrl,
+		cache: false,
+		dataType: 'text',
+		data: {req : 'del_screenshot', file: l_screenshots[index]}
+	})
+	.done(function(data) {
+		l_screenshots.splice(index, 1);
+		$('#img'+index).remove();
+		log('Deleted image: ' + l_screenshots[index]);
+	});
+}
 function run_all() {
 	run(-1);
 }
@@ -220,6 +286,8 @@ function run(index) {
 $(document).ready(function() {
 	$selected_user = $('#selected_user');
 	$users = $('#users');
+	$screenshots = $('#screenshots');
+	$show_screenshots = $('#show_screenshots');
 	$cmd = $('#cmd');
 	$data = $('#data');
 	$cmds = $('#cmds');
@@ -230,10 +298,12 @@ $(document).ready(function() {
 	$mode_linebreaks = $('#mode_linebreaks');
 	
 	refresh_users();
+	list_screenshots();
 	
 	setInterval(function() {
 		if (l_selected >= 0) {
 			select_user(l_selected);
 		}
+		list_screenshots();
 	}, 5000);
 });

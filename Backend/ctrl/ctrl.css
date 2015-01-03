@@ -16,7 +16,7 @@ textarea {
 button {
 }
 table button {
-	width: 120px;
+	min-width: 10px;
 }
 input[type="checkbox"] {
 }
@@ -39,8 +39,33 @@ label {
 	margin-bottom: 10px;
 	width: 100%;
 }
+#container_top {
+	white-space: nowrap;
+	overflow-x: hidden;
+}
+#users_container {
+	float: left;
+}
 #users {
+}
+#users button {
+	min-width: 110px;
+}
+#screenshots {
+	height: 100px;
 	margin-bottom: 10px;
+}
+#screenshots img {
+	height: 100px;
+}
+.delbutton {
+	width: 20px;
+	height: 20px;
+	margin-left: -20px;
+	padding: 0;
+}
+#show_screenshots {
+	width: 100%;
 }
 #cmd {
 	min-height: 100px;
