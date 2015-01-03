@@ -31,6 +31,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Screenshot.h">
+    </ClInclude>
     <ClInclude Include="Network.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -52,6 +53,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Screenshot.cpp">
+    </ClCompile>
     <ClCompile Include="Network.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
