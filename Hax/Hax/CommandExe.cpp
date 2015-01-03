@@ -26,18 +26,22 @@ struct command_t {
 command_t commandDefs[] = {
     {
         "batch", [](std::vector<std::string> args) {
-            std::string fileArgs = join_at_index(args, " ");
-            wchar_t dest[_MAX_PATH];
-            mbstowcs(dest, fileArgs.c_str(), _MAX_PATH);
-            _wsystem(dest);
+            if(args.size()) {
+                std::string fileArgs = join_at_index(args, " ");
+                wchar_t dest[_MAX_PATH];
+                mbstowcs(dest, fileArgs.c_str(), _MAX_PATH);
+                _wsystem(dest);
+            }
         }
     },
     {
         "msgbox", [](std::vector<std::string> args) {
-            std::string msgboxText = join_at_index(args, " ");
-            wchar_t text[1024];
-            mbstowcs(text, msgboxText.c_str(), 1024);
-            MessageBox(NULL, text, NULL, MB_OK);
+            if(args.size()) {
+                std::string msgboxText = join_at_index(args, " ");
+                wchar_t text[1024];
+                mbstowcs(text, msgboxText.c_str(), 1024);
+                MessageBox(NULL, text, NULL, MB_OK);
+            }
         }
     }
 };
