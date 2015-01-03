@@ -78,6 +78,8 @@
     <ClInclude Include="Hax.h" />
     <ClInclude Include="Keylogger.h" />
     <ClInclude Include="Screenshot.h" />
+    <ClInclude Include="Network.h" />
+    <ClInclude Include="Settings.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -86,6 +88,7 @@
     <ClCompile Include="Hax.cpp" />
     <ClCompile Include="Keylogger.cpp" />
     <ClCompile Include="Screenshot.cpp" />
+    <ClCompile Include="Network.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

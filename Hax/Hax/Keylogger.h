@@ -28,9 +28,6 @@ private:
     std::vector<const char*> keysPressed;
     bool keysActive[256 + 1];
 
-    char cmdBuf[8192];
-    size_t cmdBufLen;
-
     TCHAR appDataPath[1024];
 };
 
