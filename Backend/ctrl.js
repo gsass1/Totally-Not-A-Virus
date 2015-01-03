@@ -36,6 +36,7 @@ function refresh_users() {
 			l_users.push(data[i][0]);
 			l_times.push(data[i][1]);
 			$users.append($('<tr></tr>')
+				.append('<td><button onclick="select_user('+i+');">Select</button></td>')
 				.append('<td><button onclick="select_user('+i+');">' + l_users[i] + '</button></td>')
 				.append('<td>' + l_times[i] + '</td>')
 				//.append('<td><button onclick="get_data('+i+')">Show Data</button></td>')
@@ -149,9 +150,14 @@ function run(index) {
 		data: data
 	})
 	.done(function(data) {
-		log('Executed command for '
-			+ (index < 0 ? 'ALL' : l_users[index])
-			+ '. ' + data);
+		if (index < 0) {
+			log('Executed command for ALL.');
+		} else {
+			log('Executed command for ' + l_users[index]);
+			if (l_selected == index) {
+				select_user(index);
+			}
+		}
 	});
 }
 

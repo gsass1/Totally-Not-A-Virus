@@ -27,7 +27,7 @@ table button {
 .highlight {
 	background-color: #380;
 }
-.refresh {
+#refresh {
 	margin-bottom: 10px;
 	width: 100%;
 }
@@ -36,6 +36,9 @@ table button {
 }
 #cmd {
 	min-height: 200px;
+}
+#run_selected, #run_all {
+	width: 200px;
 }
 #data {
 	width: 49%;
@@ -59,12 +62,11 @@ table button {
 	</head>
 	<body>
 		<h1>1337 H.A.X e.v.i.l</h1>
-		<button class="refresh" onclick="refresh_users()">Refresh Users</button>
+		<button id="refresh" onclick="refresh_users()">Refresh Users</button>
 		<table id="users"></table>
-		<button class="refresh" onclick="refresh_users()">Refresh Users</button>
 		<textarea id="cmd"></textarea>
+		<button id="run_selected" disabled="disabled" onclick="run_selected()" onkeypress="">Add Command for...</button>
 		<button id="run_all" onclick="run_all()" onkeypress="">Add Command for ALL</button>
-		<button disabled="disabled" id="run_selected" onclick="run_selected()" onkeypress="">Add Command for...</button>
 		<br />
 		
 		<br class="clear" />
