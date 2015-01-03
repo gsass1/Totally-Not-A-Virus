@@ -13,3 +13,8 @@
 #include <string>
 #include <vector>
 #include <tchar.h>
+#include <sstream>
+#include <regex>
+#include <numeric>
+#include <shellapi.h>
+#include <functional>
