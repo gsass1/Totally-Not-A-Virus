@@ -14,9 +14,13 @@ var $log = null;
 var $run_selected = null;
 
 var $mode_text = null;
+var $mode_color = null;
 var $mode_linebreaks = null;
 
 function oncheck_text() {
+	select_user(l_selected);
+}
+function oncheck_color() {
 	select_user(l_selected);
 }
 function oncheck_linebreaks() {
@@ -42,6 +46,10 @@ function convert_mode_text(txt) {
 	
 	return txt;
 }
+function convert_mode_color(txt) {
+	txt = txt.replace(/\[(.*?)\]/g, '<span class="tc">[$1]</span>');
+	return txt;
+}
 function convert_mode_linebreaks(txt) {
 	txt = txt.replace(/\;/g, ';\n');
 	return txt;
@@ -53,6 +61,9 @@ function log(msg) {
 function set_data(data) {
 	if ($mode_text.is(':checked')) {
 		data = convert_mode_text(data);
+	}
+	if ($mode_color.is(':checked')) {
+		data = convert_mode_color(data);
 	}
 	$data.val(data);
 }
@@ -215,6 +226,7 @@ $(document).ready(function() {
 	$log = $('#log');
 	$run_selected = $('#run_selected');
 	$mode_text = $('#mode_text');
+	$mode_color = $('#mode_color');
 	$mode_linebreaks = $('#mode_linebreaks');
 	
 	refresh_users();
