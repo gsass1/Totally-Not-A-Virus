@@ -11,6 +11,8 @@ public:
     std::string SendPost(const char* msg, size_t len);
 
 private:
+    WSADATA WSAData;
+
     char buf[8192];
     size_t bufLen;
 };

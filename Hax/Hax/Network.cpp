@@ -7,7 +7,7 @@ Network network;
 
 Network::Network() : bufLen(sizeof(buf))
 {
-
+    WSAStartup(MAKEWORD(2, 0), &WSAData);
 }
 
 
