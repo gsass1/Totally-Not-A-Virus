@@ -8,7 +8,8 @@ The backend is a website written in JavaScript (with jQuery) and PHP.
 
 ## Capabilities
 
-* Copies itself into autostart directories
+* Key logging & screenshots
+* Copies itself into autostart locations
 * Remote command execution
 * Great web interface with user overview and command console
 
