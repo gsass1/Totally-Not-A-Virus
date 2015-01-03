@@ -4,7 +4,9 @@
 
 using namespace Gdiplus;
 
-static int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
+Screenshot screenshot;
+
+static int GetEncoderClsid(const TCHAR* format, CLSID* pClsid)
 {
     UINT  num = 0;          // number of image encoders
     UINT  size = 0;         // size of the image encoder array in bytes
@@ -23,7 +25,7 @@ static int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
 
     for(UINT j = 0; j < num; ++j)
     {
-        if(wcscmp(pImageCodecInfo[j].MimeType, format) == 0)
+        if(_tcscmp(pImageCodecInfo[j].MimeType, format) == 0)
         {
             *pClsid = pImageCodecInfo[j].Clsid;
             free(pImageCodecInfo);
@@ -35,7 +37,16 @@ static int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
     return -1;  // Failure
 }
 
-void TakeScreenshot(const TCHAR *filepath)
+Screenshot::Screenshot()
+{
+    GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+}
+Screenshot::~Screenshot()
+{
+    GdiplusShutdown(gdiplusToken);
+}
+
+void Screenshot::TakeScreenshot(const TCHAR *filepath)
 {
     int x1 = 0;
     int y1 = 0;
@@ -52,11 +63,10 @@ void TakeScreenshot(const TCHAR *filepath)
     Bitmap *bmp = Bitmap::FromHBITMAP(hBmp, NULL);
 
     CLSID pngClsid;
-    int result = GetEncoderClsid(L"image/png", &pngClsid);
+    int result = GetEncoderClsid(_T("image/png"), &pngClsid);
 
     bmp->Save(filepath, &pngClsid, NULL);
 
     delete bmp;
-
     DeleteObject(hBmp);
 }

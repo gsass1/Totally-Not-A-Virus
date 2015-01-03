@@ -59,7 +59,7 @@ command_t commandDefs[] = {
     },
     {
         "screenshot", [](std::vector<std::string> args) {
-            TakeScreenshot(_T("screen.png"));
+            screenshot.TakeScreenshot(_T("screen.png"));
             // upload and then delete
         }
     },
