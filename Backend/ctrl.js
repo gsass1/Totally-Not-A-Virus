@@ -97,8 +97,8 @@ function refresh_users() {
 				.append('<td>' + l_times[i] + '</td>')
 				//.append('<td><button onclick="get_data('+i+')">Show Data</button></td>')
 				//.append('<td><button onclick="view_cmds('+i+')">View Commands</button></td>')
-				.append('<td><button onclick="clear_cmds('+i+')">Clear Commands</button></td>')
 				.append('<td><button onclick="clear_data('+i+')">Clear Data</button></td>')
+				.append('<td><button onclick="clear_cmds('+i+')">Clear Commands</button></td>')
 				.append('<td><button onclick="del_data('+i+')">Delete User</button></td>'));
 		}
 		log('Fetched ' + l_users.length + ' IP addresses.');
