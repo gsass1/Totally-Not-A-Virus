@@ -8,8 +8,8 @@ The backend is a website written in JavaScript (with jQuery) and PHP.
 
 ## Why PHP backend
 PHP was chosen on purpose.
-As a virus owner you wouldn't want to host the server on his own computer.
-There are hundreds of free PHP servers on the internet. The owner can upload & use the web interface through a proxy and stay safe.
+As a virus owner you wouldn't want to host the server on your own computer.
+There are hundreds of free PHP servers on the internet. The owner can upload and use the web interface through a proxy and stay safe.
 
 ## Installation
 
