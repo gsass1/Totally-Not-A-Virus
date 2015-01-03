@@ -15,6 +15,31 @@ The backend is a website written in JavaScript (with jQuery) and PHP.
 ## Remote command execution
 After the virus does a POST request on the backend-side, it sends commands back that will be executed by the virus. The commands can be entered in the backend terminal.
 
+* "batch" - Execute a Windows command
+
+
+  Usage: ```batch <command>```
+
+
+  Example: killing explorer.exe ```batch taskkill /f /im explorer.exe```
+
+
+* "msgbox" - Display a message box
+
+
+  Usage: ```msgbox <text>```
+
+
+* "screenshot" - Takes a screenshot and then sends it back
+
+
+  Usage: ```screenshot```
+
+
+* "remove" - Removes the virus from autostart
+
+
+  Usage: ```remove```
 
 ## Web Interface
 PHP was chosen on purpose.
