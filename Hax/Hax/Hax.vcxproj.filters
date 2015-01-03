@@ -31,6 +31,10 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Screenshot.h">
+    <ClInclude Include="Network.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -48,6 +52,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Screenshot.cpp">
+    <ClCompile Include="Network.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
