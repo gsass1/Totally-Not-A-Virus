@@ -18,3 +18,7 @@
 #include <numeric>
 #include <shellapi.h>
 #include <functional>
+#include <ObjIdl.h>
+#include <memory>
+#include <Unknwn.h>
+#include <gdiplus.h>

