@@ -91,7 +91,7 @@ Network::SendPost(char* buf, size_t buf_len, size_t *response_len, const char** 
 
 	if (buf_len == 0 || buf == nullptr || response_start == nullptr)
 	{
-		while (recv(sock, dummyBuf, sizeof(dummyBuf), 0) > 0) {}
+		recv(sock, dummyBuf, sizeof(dummyBuf), 0);
 		closesocket(sock);
 		return true;
 	}

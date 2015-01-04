@@ -15,7 +15,7 @@ public:
 private:
 	WSADATA WSAData;
 
-	char dummyBuf[500];
+	char dummyBuf[1024];
 };
 
 extern Network network;
