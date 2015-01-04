@@ -217,28 +217,32 @@ function list_screenshots() {
 			var link = ctrl+'?s='+l_screenshots[i];
 			log('Loading new screenshot: ' + l_screenshots[i]);
 			$screenshots.prepend(
-				$('<span class="imgcontainer" id="img'+i+'"></span>').append(
+				$('<span class="imgcontainer"></span>').append(
 					$('<a></a>').attr('href', link).attr('target', '_blank')
 						.append($('<img></img>').attr('src', link))
 						.hide().fadeIn('slow'),
-					$('<button class="delbutton" onclick="del_screenshot('+i+')">X</button>')));
+					$('<button class="delbutton" onclick="del_screenshot(\''
+						+l_screenshots[i]+'\')">X</button>')));
 			
 		}
 	});
 }
-function del_screenshot(index) {
+function del_screenshot(name) {
+
+	var index = l_screenshots.indexOf(name);
+	if (index < 0) return;
+
 	$.ajax({
 		type: 'POST',
 		url: ctrl,
 		cache: false,
 		dataType: 'text',
-		data: {req : 'del_screenshot', file: l_screenshots[index]}
-	})
-	.done(function(data) {
-		l_screenshots.splice(index, 1);
-		$('#img'+index).remove();
-		log('Deleted image: ' + l_screenshots[index]);
+		data: {req : 'del_screenshot', file: name}
 	});
+	
+	log('Deleting image: ' + name);
+	$('a[href="'+ctrl+'?s='+l_screenshots[index]+'"]').parent().remove();
+	l_screenshots.splice(index, 1);
 }
 function run_all() {
 	run(-1);
