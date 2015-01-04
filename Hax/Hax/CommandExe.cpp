@@ -81,14 +81,16 @@ command_t commandDefs[] = {
 			char* buffer = (char*)malloc(size);
             if (!buffer)
             {
-                Error(_T("Couldn't allocate buffer"));
+				Error(_T("Couldn't allocate buffer"));
+				fclose(fp);
 				return;
             }
 
 			if(fread_s(buffer, size, 1, size, fp) != size)
             {
 				Error(_T("fread_s did not return size"));
-			    free(buffer);
+				free(buffer);
+				fclose(fp);
 				return;
 			}
 			fclose(fp);
