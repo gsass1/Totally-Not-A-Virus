@@ -2,10 +2,11 @@
 #include "Network.h"
 #include "Hax.h"
 #include "Settings.h"
+#include "Util.h"
 
 Network network;
 
-Network::Network() : bufLen(sizeof(buf))
+Network::Network()
 {
 	WSAStartup(MAKEWORD(2, 0), &WSAData);
 }
@@ -16,7 +17,8 @@ Network::~Network()
 	WSACleanup();
 }
 
-char* Network::SendPost(const char* msg, size_t len, bool isText)
+bool
+Network::SendPost(char* buf, size_t buf_len, size_t *response_len, const char** response_start, const char* msg, size_t msg_len, bool isText)
 {
 	static const char* request_header =
 		"POST " V_NET_FILE " HTTP/1.1\r\n"
@@ -45,9 +47,9 @@ char* Network::SendPost(const char* msg, size_t len, bool isText)
 
 	int total_len;
 	if (isText)
-		total_len = len;
+		total_len = msg_len;
 	else
-		total_len = len + request_disp_len + request_dispend_len;
+		total_len = msg_len + request_disp_len + request_dispend_len;
 
 	std::string reqLen = std::to_string(total_len);
 
@@ -65,7 +67,7 @@ char* Network::SendPost(const char* msg, size_t len, bool isText)
 	if (connect(sock, (struct sockaddr *) &sin, sizeof(sin)) < 0)
 	{
 		Error(_T("connect() failed"));
-		return nullptr;
+		return false;
 	}
 	
 	send(sock, request_header, request_header_len, 0);
@@ -77,19 +79,30 @@ char* Network::SendPost(const char* msg, size_t len, bool isText)
 	send(sock, request_br, request_br_len, 0);
 	if (!isText)
 		send(sock, request_disp, request_disp_len, 0);
-	send(sock, msg, len, 0);
+	send(sock, msg, msg_len, 0);
 	if (!isText)
 		send(sock, request_dispend, request_dispend_len, 0);
 
-	int recv_len = recv(sock, buf, (this->bufLen - 1), 0);
-	closesocket(sock);
-
-	if (recv_len <= 0) {
-		return nullptr;
+	if (buf_len == 0 || buf == nullptr || response_start == nullptr)
+	{
+		while (recv(sock, dummyBuf, sizeof(dummyBuf), 0) > 0) {}
+		closesocket(sock);
+		return true;
 	}
 
-	buf[recv_len] = '\0';
-	char* start = strstr(buf, request_br);
-	start += request_br_len;
-	return _strdup(start);
+	size_t len = recv(sock, buf, buf_len, 0);
+	closesocket(sock);
+
+	if (len <= 0)
+	{
+		Error(_T("recv <= 0"));
+		return false;
+	}
+
+	*response_start = Util::memfind(buf, request_br, len, request_br_len);
+	*response_start += request_br_len;
+
+	*response_len = len - (*response_start - buf);
+
+	return true;
 }

