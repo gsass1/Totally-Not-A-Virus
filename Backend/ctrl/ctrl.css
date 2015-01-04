@@ -47,16 +47,21 @@ label {
 	float: left;
 }
 #users {
+	margin-bottom: 10px;
 }
 #users button {
 	min-width: 110px;
 }
 #screenshots {
-	height: 100px;
+	max-height: 140px;
 	margin-bottom: 10px;
 }
 #screenshots img {
-	height: 100px;
+}
+.imgcontainer {
+}
+.imgcontainer img {
+	height: 140px;
 }
 .delbutton {
 	width: 20px;

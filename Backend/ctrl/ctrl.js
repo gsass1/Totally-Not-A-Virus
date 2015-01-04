@@ -30,14 +30,14 @@ function show_screenshots() {
 		$('#container_top')
 			.css('whiteSpace', 'nowrap')
 			.css('overflow', 'hidden');
-		$screenshots.css('height', '100px');
+		$screenshots.css('maxHeight', '140px');
 	} else {
 		b_screenshots_shown = true;
 		$show_screenshots.text('Hide Screenshots');
 		$('#container_top')
 			.css('whiteSpace', 'normal')
 			.css('overflow', 'visible');
-		$screenshots.css('height', 'auto');
+		$screenshots.css('maxHeight', 'none');
 	}
 }
 

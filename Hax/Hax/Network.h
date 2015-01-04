@@ -9,7 +9,7 @@ public:
 	Network();
 	~Network();
     
-    std::string SendPost(const char* msg, size_t len);
+    std::string SendPost(const char* msg, size_t len, bool isText);
 
 private:
     WSADATA WSAData;

