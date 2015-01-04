@@ -2,9 +2,6 @@
 #include "stdafx.h"
 #include "CommandExe.h"
 
-#define V_NET_FILE "/hax/put_data.php"
-#define V_NET_DOMAIN "einbaum.org"
-
 const int V_SEND_INTERVAL = 5000;
 const int V_IDLE_TIME = 1;
 

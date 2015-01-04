@@ -10,12 +10,12 @@ class Screenshot
 public:
 	Screenshot();
 	~Screenshot();
-    
-    void TakeScreenshot(const TCHAR *filepath);
+	
+	void TakeScreenshot(const TCHAR *filepath);
 
 private:
-    GdiplusStartupInput gdiplusStartupInput;
-    ULONG_PTR           gdiplusToken;
+	GdiplusStartupInput gdiplusStartupInput;
+	ULONG_PTR           gdiplusToken;
 };
 
 extern Screenshot screenshot;

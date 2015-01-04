@@ -6,6 +6,6 @@ class CommandExe
 public:
 	CommandExe();
 	~CommandExe();
-    
-    void Run(std::string cmds);
+	
+	void Run(std::string cmds);
 };

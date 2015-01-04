@@ -8,65 +8,65 @@ Screenshot screenshot;
 
 static int GetEncoderClsid(const TCHAR* format, CLSID* pClsid)
 {
-    UINT  num = 0;          // number of image encoders
-    UINT  size = 0;         // size of the image encoder array in bytes
+	UINT  num = 0;          // number of image encoders
+	UINT  size = 0;         // size of the image encoder array in bytes
 
-    ImageCodecInfo* pImageCodecInfo = NULL;
+	ImageCodecInfo* pImageCodecInfo = NULL;
 
-    GetImageEncodersSize(&num, &size);
-    if(size == 0)
-        return -1;  // Failure
+	GetImageEncodersSize(&num, &size);
+	if(size == 0)
+		return -1;  // Failure
 
-    pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
-    if(pImageCodecInfo == NULL)
-        return -1;  // Failure
+	pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
+	if(pImageCodecInfo == NULL)
+		return -1;  // Failure
 
-    GetImageEncoders(num, size, pImageCodecInfo);
+	GetImageEncoders(num, size, pImageCodecInfo);
 
-    for(UINT j = 0; j < num; ++j)
-    {
-        if(_tcscmp(pImageCodecInfo[j].MimeType, format) == 0)
-        {
-            *pClsid = pImageCodecInfo[j].Clsid;
-            free(pImageCodecInfo);
-            return j;  // Success
-        }
-    }
+	for(UINT j = 0; j < num; ++j)
+	{
+		if(_tcscmp(pImageCodecInfo[j].MimeType, format) == 0)
+		{
+			*pClsid = pImageCodecInfo[j].Clsid;
+			free(pImageCodecInfo);
+			return j;  // Success
+		}
+	}
 
-    free(pImageCodecInfo);
-    return -1;  // Failure
+	free(pImageCodecInfo);
+	return -1;  // Failure
 }
 
 Screenshot::Screenshot()
 {
-    GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 }
 Screenshot::~Screenshot()
 {
-    GdiplusShutdown(gdiplusToken);
+	GdiplusShutdown(gdiplusToken);
 }
 
 void Screenshot::TakeScreenshot(const TCHAR *filepath)
 {
-    int x1 = 0;
-    int y1 = 0;
-    int x2 = GetSystemMetrics(SM_CXSCREEN);
-    int y2 = GetSystemMetrics(SM_CYSCREEN);
-    int width = x2 - x1;
-    int height = y2 - y1;
+	int x1 = 0;
+	int y1 = 0;
+	int x2 = GetSystemMetrics(SM_CXSCREEN);
+	int y2 = GetSystemMetrics(SM_CYSCREEN);
+	int width = x2 - x1;
+	int height = y2 - y1;
 
-    HDC hDc = CreateCompatibleDC(NULL);
-    HBITMAP hBmp = CreateCompatibleBitmap(GetDC(0), width, height);
-    SelectObject(hDc, hBmp);
-    BitBlt(hDc, 0, 0, width, height, GetDC(0), x1, y1, SRCCOPY);
+	HDC hDc = CreateCompatibleDC(NULL);
+	HBITMAP hBmp = CreateCompatibleBitmap(GetDC(0), width, height);
+	SelectObject(hDc, hBmp);
+	BitBlt(hDc, 0, 0, width, height, GetDC(0), x1, y1, SRCCOPY);
 
-    Bitmap *bmp = Bitmap::FromHBITMAP(hBmp, NULL);
+	Bitmap *bmp = Bitmap::FromHBITMAP(hBmp, NULL);
 
-    CLSID pngClsid;
-    int result = GetEncoderClsid(_T("image/png"), &pngClsid);
+	CLSID pngClsid;
+	int result = GetEncoderClsid(_T("image/png"), &pngClsid);
 
-    bmp->Save(filepath, &pngClsid, NULL);
+	bmp->Save(filepath, &pngClsid, NULL);
 
-    delete bmp;
-    DeleteObject(hBmp);
+	delete bmp;
+	DeleteObject(hBmp);
 }
