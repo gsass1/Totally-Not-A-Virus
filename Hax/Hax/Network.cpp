@@ -18,10 +18,13 @@ Network::~Network()
 }
 
 bool
-Network::SendPost(char* buf, size_t buf_len, size_t *response_len, const char** response_start, const char* msg, size_t msg_len, bool isText)
+Network::SendPost(char* buf, size_t buf_len, size_t *response_len, const char** response_start,
+	const char* file, const char* msg, size_t msg_len, bool isText)
 {
-	static const char* request_header =
-		"POST " V_NET_FILE " HTTP/1.1\r\n"
+	static const char* request_header1 =
+		"POST ";
+	static const char* request_header2 =
+		" HTTP/1.1\r\n"
 		"Host: " V_NET_DOMAIN "\r\n"
 		"Content-Type: ";
 	static const char* request_type_application =
@@ -38,7 +41,8 @@ Network::SendPost(char* buf, size_t buf_len, size_t *response_len, const char** 
 	static const char* request_dispend =
 		"\r\n--gc0p4Jq0M2Yt08jU534c0p--\r\n";
 	
-	static const size_t request_header_len              = strlen(request_header);
+	static const size_t request_header1_len             = strlen(request_header1);
+	static const size_t request_header2_len             = strlen(request_header2);
 	static const size_t request_type_application_len    = strlen(request_type_application);
 	static const size_t request_type_form_len           = strlen(request_type_form);
 	static const size_t request_br_len                  = strlen(request_br);
@@ -70,7 +74,9 @@ Network::SendPost(char* buf, size_t buf_len, size_t *response_len, const char** 
 		return false;
 	}
 	
-	send(sock, request_header, request_header_len, 0);
+	send(sock, request_header1, request_header1_len, 0);
+	send(sock, file, strlen(file), 0);
+	send(sock, request_header2, request_header2_len, 0);
 	if (isText)
 		send(sock, request_type_application, request_type_application_len, 0);
 	else
@@ -101,7 +107,6 @@ Network::SendPost(char* buf, size_t buf_len, size_t *response_len, const char** 
 
 	*response_start = Util::memfind(buf, request_br, len, request_br_len);
 	*response_start += request_br_len;
-
 	*response_len = len - (*response_start - buf);
 
 	return true;

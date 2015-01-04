@@ -89,7 +89,7 @@ command_t commandDefs[] = {
 					goto g_3;
 				}
 
-				network.SendPost(NULL, 0, NULL, NULL, buffer, size, false);
+				network.SendPost(NULL, 0, NULL, NULL, V_NET_FILE_DATA, buffer, size, false);
 
 				g_3:	free(buffer);
 				g_2:	fclose(fp);
