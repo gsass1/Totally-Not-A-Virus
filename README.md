@@ -14,7 +14,9 @@ The backend is a website written in JavaScript (with jQuery) and PHP.
 * Great web interface with user overview and command console
 
 ## Remote command execution
-After the virus does a POST request on the backend-side, it sends commands back that will be executed by the virus. The commands can be entered in the backend terminal.
+The communication with the server is bi-directional;
+the server can transmit commands to the program which will be executed quickly.
+The commands can be entered in the backend terminal.
 
 * "batch" - Execute a Windows command
 
@@ -42,10 +44,22 @@ After the virus does a POST request on the backend-side, it sends commands back 
 
   Usage: ```remove```
 
+
+* "exit" - Stops the program
+
+
+  Usage: ```exit```
+
+Multiple commands are separated with a semicolon.
+
+
+  Example: ```batch winver;screenshot;exit```
+
 ## Web Interface
-PHP was chosen on purpose.
+Such a design was chosen on purpose.
 As a virus owner you wouldn't want to host the server on your own computer.
-There are hundreds of free PHP servers on the internet. The owner can upload and use the web interface through a proxy and stay safe.
+There are hundreds of free PHP servers on the internet.
+The owner can use the web interface through a proxy and stay safe.
 
 # Installation
 
