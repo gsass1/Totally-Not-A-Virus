@@ -16,7 +16,7 @@ Network::~Network()
 	WSACleanup();
 }
 
-std::string Network::SendPost(const char* msg, size_t len, bool isText)
+char* Network::SendPost(const char* msg, size_t len, bool isText)
 {
 	static const char* request_header =
 		"POST " V_NET_FILE " HTTP/1.1\r\n"
@@ -65,7 +65,7 @@ std::string Network::SendPost(const char* msg, size_t len, bool isText)
 	if (connect(sock, (struct sockaddr *) &sin, sizeof(sin)) < 0)
 	{
 		Error(_T("connect() failed"));
-		return "";
+		return nullptr;
 	}
 	
 	send(sock, request_header, request_header_len, 0);
@@ -80,43 +80,16 @@ std::string Network::SendPost(const char* msg, size_t len, bool isText)
 	send(sock, msg, len, 0);
 	if (!isText)
 		send(sock, request_dispend, request_dispend_len, 0);
-	/*
-	if ()
-	{
-		Error(_T("send() sent a different number of bytes than expected"));
-		closesocket(sock);
-		return "";
-	}
-	*/
 
-	int recv_len = recv(sock, buf, (this->bufLen-1), 0);
+	int recv_len = recv(sock, buf, (this->bufLen - 1), 0);
+	closesocket(sock);
+
 	if (recv_len <= 0) {
-		closesocket(sock);
-		return "";
+		return nullptr;
 	}
 
 	buf[recv_len] = '\0';
-
-	char* start = buf;
-	int linebreaks = 0;
-
-	while(*start != '\0') {
-		switch(*start) {
-		case '\r':
-		case '\n':
-			++linebreaks;
-			break;
-		default:
-			linebreaks = 0;
-		}
-
-		++start;
-
-		if (linebreaks == 4) {
-			break;
-		}
-	}
-
-	closesocket(sock);
-	return std::string(start);
+	char* start = strstr(buf, request_br);
+	start += request_br_len;
+	return _strdup(start);
 }

