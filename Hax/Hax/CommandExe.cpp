@@ -127,6 +127,7 @@ void CommandExe::Run(std::string cmds)
 	std::vector<std::string> commands = split(cmds, ';');
 	for (auto &cmd : commands) {
 		std::vector<std::string> args = split(cmd, ' ');
+		args.erase(std::remove_if(args.begin(), args.end(), [&](const std::string &s) { return std::all_of(s.begin(), s.end(), isspace); }), args.end());
 		if (args.size()) {
 			auto result = std::find_if(std::begin(commandDefs), std::end(commandDefs), [&](const command_t & cmd) { return cmd.name == args[0].c_str(); });
 			if (result != std::end(commandDefs)) {
