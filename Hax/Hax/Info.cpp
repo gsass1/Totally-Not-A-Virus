@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Info.h"
+#include "Util.h"
 #include <Psapi.h>
 
 Info info;
@@ -8,30 +9,21 @@ static void GetProcessInfoStr(DWORD processID, TCHAR *dst, size_t size)
 {
 	std::string ret;
 	TCHAR processName[MAX_PATH] = _T("unknown");
-	HANDLE hProcess = OpenProcess(	PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
-									FALSE, processID);
+	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
+		FALSE, processID);
 
-	if(hProcess != NULL) {
-		HMODULE hMod;
-		DWORD bytesNeeded;
-
-		if(EnumProcessModules(hProcess, &hMod, sizeof(hMod), &bytesNeeded)) {
-			GetModuleBaseName(	hProcess, hMod, processName,
-								sizeof(processName) / sizeof(TCHAR));
-		}
+	if(hProcess == NULL) {
+		return;
 	}
 
-	_tcscat_s(dst, size, _T("n:"));
-	_tcscat_s(dst, size, processName);
+	HMODULE hMod;
+	DWORD bytesNeeded;
 
-	_tcscat_s(dst, size, _T(";"));
-
-	_tcscat_s(dst, size, _T("i:"));
-
-	TCHAR idBuf[32];
-	_stprintf_s(idBuf, 32, _T("%d"), processID);
-
-	_tcscat_s(dst, size, idBuf);
+	if(EnumProcessModules(hProcess, &hMod, sizeof(hMod), &bytesNeeded)) {
+		GetModuleBaseName(hProcess, hMod, processName,
+			sizeof(processName) / sizeof(TCHAR));
+		_tcscat_s(dst, size, processName);
+	}
 }
 
 static std::string EnumerateProcesses()
@@ -55,7 +47,11 @@ static std::string EnumerateProcesses()
 
 			char dest[2048] = { 0 };
 			std::wcstombs(dest, infoStr, 2048);
-			ret += dest;
+
+			if(strlen(dest)) {
+				ret += dest;
+				ret += ";";
+			}
 		}
 	}
 
@@ -88,9 +84,19 @@ std::string Info::GetInformation()
 	info += ".";
 	info += std::to_string(osVersionInfo.dwBuildNumber);
 
-	info += "\nprocs:";
+	info += "\n";
 
-	info += EnumerateProcesses();
+	std::string procs = EnumerateProcesses();
+
+	info += "procn:";
+	info += std::to_string(Util::split(procs, ';').size());
+
+	info += "\n";
+
+	info += "procs:";
+	info += procs;
+
+	info += "\n";
 
 	return info;
 }

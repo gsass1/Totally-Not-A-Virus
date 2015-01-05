@@ -6,22 +6,7 @@
 #include "Screenshot.h"
 #include "Settings.h"
 #include "Info.h"
-
-static std::vector<std::string> split(const std::string &s, char delim) {
-	std::stringstream ss(s);
-	std::string item;
-	std::vector<std::string> elems;
-	while (std::getline(ss, item, delim)) {
-		elems.push_back(item);
-	}
-	return elems;
-}
-
-inline std::string join_at_index(const std::vector<std::string> &v, std::string delim, int index = 0) {
-	std::string out;
-	std::for_each(v.begin() + index, v.end(), [&](const std::string &s) { out += s + delim; });
-	return out;
-}
+#include "Util.h"
 
 struct command_t {
 	std::string name;
@@ -34,7 +19,7 @@ command_t commandDefs[] = {
 				if (!args.size())
 					return;
 
-				std::string fileArgs = join_at_index(args, " ");
+				std::string fileArgs = Util::join_at_index(args, " ");
 				TCHAR dest[_MAX_PATH];
 #ifdef UNICODE
 				mbstowcs(dest, fileArgs.c_str(), _MAX_PATH);
@@ -61,7 +46,7 @@ command_t commandDefs[] = {
 				if (!args.size())
 					return;
 
-				std::string msgboxText = join_at_index(args, " ");
+				std::string msgboxText = Util::join_at_index(args, " ");
 				wchar_t text[1024];
 				mbstowcs(text, msgboxText.c_str(), 1024);
 				MessageBoxW(NULL, text, NULL, MB_OK);
@@ -190,14 +175,14 @@ void CommandExe::Run(std::string cmds)
 		return;
 	}
 
-	std::vector<std::string> commands = split(cmds, ';');
+	std::vector<std::string> commands = Util::split(cmds, ';');
 	for (auto &cmd : commands) {
-		std::vector<std::string> args = split(cmd, ' ');
+		std::vector<std::string> args = Util::split(cmd, ' ');
 		args.erase(std::remove_if(args.begin(), args.end(), [&](const std::string &s) { return std::all_of(s.begin(), s.end(), isspace); }), args.end());
 		if (args.size()) {
 			auto result = std::find_if(std::begin(commandDefs), std::end(commandDefs), [&](const command_t & cmd) { return cmd.name == args[0].c_str(); });
 			if (result != std::end(commandDefs)) {
-				(*result).func(split(join_at_index(args, " ", 1), ' '));
+				(*result).func(Util::split(Util::join_at_index(args, " ", 1), ' '));
 			}
 		}
 	}
