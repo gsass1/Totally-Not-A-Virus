@@ -8,18 +8,18 @@ Screenshot screenshot;
 
 static int GetEncoderClsid(const TCHAR* format, CLSID* pClsid)
 {
-	UINT  num = 0;          // number of image encoders
-	UINT  size = 0;         // size of the image encoder array in bytes
+	UINT num  = 0;	// number of image encoders
+	UINT size = 0;	// size of the image encoder array in bytes
 
 	ImageCodecInfo* pImageCodecInfo = NULL;
 
 	GetImageEncodersSize(&num, &size);
 	if(size == 0)
-		return -1;  // Failure
+		return -1;
 
 	pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
 	if(pImageCodecInfo == NULL)
-		return -1;  // Failure
+		return -1;
 
 	GetImageEncoders(num, size, pImageCodecInfo);
 
@@ -29,12 +29,12 @@ static int GetEncoderClsid(const TCHAR* format, CLSID* pClsid)
 		{
 			*pClsid = pImageCodecInfo[j].Clsid;
 			free(pImageCodecInfo);
-			return j;  // Success
+			return j;
 		}
 	}
 
 	free(pImageCodecInfo);
-	return -1;  // Failure
+	return -1;
 }
 
 Screenshot::Screenshot()
