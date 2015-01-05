@@ -35,7 +35,7 @@ static std::string EnumerateProcesses()
 	std::string ret;
 
 	if(!EnumProcesses(processes, sizeof(processes), &bytesNeeded)) {
-		return false;
+		return "";
 	}
 
 	processCount = bytesNeeded / sizeof(DWORD);
