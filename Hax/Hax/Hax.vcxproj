@@ -19,7 +19,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -76,6 +76,7 @@
   <ItemGroup>
     <ClInclude Include="CommandExe.h" />
     <ClInclude Include="Hax.h" />
+    <ClInclude Include="Info.h" />
     <ClInclude Include="Keylogger.h" />
     <ClInclude Include="Screenshot.h" />
     <ClInclude Include="Network.h" />
@@ -87,6 +88,7 @@
   <ItemGroup>
     <ClCompile Include="CommandExe.cpp" />
     <ClCompile Include="Hax.cpp" />
+    <ClCompile Include="Info.cpp" />
     <ClCompile Include="Keylogger.cpp" />
     <ClCompile Include="Screenshot.cpp" />
     <ClCompile Include="Network.cpp" />
