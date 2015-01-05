@@ -49,11 +49,11 @@
 		<br />
 		
 		<textarea id="log" readonly="readonly"></textarea>
-		
-<form action="../put_data.php" method="post" enctype="multipart/form-data">
-File:
-<input type="file" name="s">
-<input type="submit" value="Upload File (THIS IS A TEST)" name="submit">
-</form>
+		<table id="files"></table>
+		<form action="ctrl.php" method="post" enctype="multipart/form-data">
+			<input type="file" name="file" />
+			<input type="hidden" name="req" value="upload_file" />
+			<input type="submit" value="Upload Executable" name="submit">
+		</form>
 	</body>
 </html>

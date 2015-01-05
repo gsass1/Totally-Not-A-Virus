@@ -7,6 +7,9 @@ body {
 	font-family: monospace;
 	font-size: 15px;
 }
+a {
+	color: #380;
+}
 textarea {
 	display: block;
 	width: 100%;

