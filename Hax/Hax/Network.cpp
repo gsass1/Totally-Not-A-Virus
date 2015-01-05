@@ -20,7 +20,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 				   size_t *resp_len, char **resp_data)
 {
 	static const char* headers_proto =
-		"%s %s HTTP/1.1\r\n"
+		"%s " V_NET_BASE "%s HTTP/1.1\r\n"
 		"Host: " V_NET_DOMAIN "\r\n"
 		"Content-Type: %s\r\n"
 		"Content-Length: %d\r\n\r\n";
@@ -166,6 +166,10 @@ bool Network::SendAndGetText(const char* req_url, const char *text, size_t *resp
 		"POST", req_url, "application/x-www-form-urlencoded",
 		1, req_data_len, req_data,
 		resp_len, resp_data);
+}
+bool Network::SendText(const char* req_url, const char *text)
+{
+	return this->SendAndGetText(req_url, text, nullptr, nullptr);
 }
 bool Network::GetFile(const char* req_url, size_t *resp_len, char **resp_data)
 {

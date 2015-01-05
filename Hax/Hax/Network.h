@@ -14,6 +14,7 @@ public:
 	
 	bool SendFile(const char* req_url, size_t file_size, const char *file);
 	bool SendAndGetText(const char* req_url, const char *text, size_t *resp_len, char **resp_data);
+	bool SendText(const char* req_url, const char *text);
 	bool GetFile(const char* req_url, size_t *resp_len, char **resp_data);
 
 private:

