@@ -4,7 +4,7 @@
 
 Info info;
 
-static void GetProcessInfoStr(DWORD processID, TCHAR *dst)
+static void GetProcessInfoStr(DWORD processID, TCHAR *dst, size_t size)
 {
 	std::string ret;
 	TCHAR processName[MAX_PATH] = _T("unknown");
@@ -21,14 +21,17 @@ static void GetProcessInfoStr(DWORD processID, TCHAR *dst)
 		}
 	}
 
-	_tcscat(dst, _T("n:"));
-	_tcscat(dst, processName);
-	_tcscat(dst, _T("i:"));
+	_tcscat_s(dst, size, _T("n:"));
+	_tcscat_s(dst, size, processName);
+
+	_tcscat_s(dst, size, _T(";"));
+
+	_tcscat_s(dst, size, _T("i:"));
 
 	TCHAR idBuf[32];
-	_stprintf(idBuf, _T("%d"), processID);
+	_stprintf_s(idBuf, 32, _T("%d"), processID);
 
-	_tcscat(dst, idBuf);
+	_tcscat_s(dst, size, idBuf);
 }
 
 static std::string EnumerateProcesses()
@@ -47,15 +50,16 @@ static std::string EnumerateProcesses()
 
 	for(i = 0; i < processCount; i++) {
 		if(processes[i] != 0) {
-			TCHAR infoStr[512];
-			GetProcessInfoStr(processes[i], infoStr);
+			TCHAR infoStr[2048] = { 0 };
+			GetProcessInfoStr(processes[i], infoStr, 2048);
 
-			char dest[512];
-			wcstombs(dest, infoStr, 512);
-
+			char dest[2048] = { 0 };
+			std::wcstombs(dest, infoStr, 2048);
 			ret += dest;
 		}
 	}
+
+	return ret;
 }
 
 Info::Info()
@@ -70,16 +74,21 @@ std::string Info::GetInformation()
 {
 	std::string info;
 	OSVERSIONINFO osVersionInfo;
-	TCHAR procInfo[16384];
 
+	ZeroMemory(&osVersionInfo, sizeof(OSVERSIONINFO));
+	osVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+
+	// TODO: this function is deprecated since Windows 8?
 	GetVersionEx(&osVersionInfo);
 
 	info += "osVer:";
-	info += osVersionInfo.dwMajorVersion;
+	info += std::to_string(osVersionInfo.dwMajorVersion);
 	info += ".";
-	info += osVersionInfo.dwMinorVersion;
+	info += std::to_string(osVersionInfo.dwMinorVersion);
 	info += ".";
-	info += osVersionInfo.dwBuildNumber;
+	info += std::to_string(osVersionInfo.dwBuildNumber);
+
+	info += "\nprocs:";
 
 	info += EnumerateProcesses();
 
