@@ -74,6 +74,29 @@ static std::string GetHostname()
 	return ret;
 }
 
+static std::string GetTime()
+{
+	SYSTEMTIME sysTime;
+	std::string ret;
+
+	ZeroMemory(&sysTime, sizeof(SYSTEMTIME));
+	GetLocalTime(&sysTime);
+
+	ret += std::to_string(sysTime.wDay);
+	ret += ".";
+	ret += std::to_string(sysTime.wMonth);
+	ret += ".",
+	ret += std::to_string(sysTime.wYear);
+	ret += " ";
+	ret += std::to_string(sysTime.wHour);
+	ret += ":";
+	ret += std::to_string(sysTime.wMinute);
+	ret += ":";
+	ret += std::to_string(sysTime.wSecond);
+
+	return ret;
+}
+
 Info::Info()
 {
 }
@@ -118,6 +141,13 @@ std::string Info::GetInformation()
 	info += GetHostname();
 
 	info += "\n";
+
+	info += "time:";
+	info += GetTime();
+
+	info += "\n";
+
+
 
 	return info;
 }
