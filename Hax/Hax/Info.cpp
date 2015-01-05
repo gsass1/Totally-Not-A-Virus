@@ -198,12 +198,12 @@ std::string Info::GetInformation()
 
 	info += "\n";
 
-	info += "memory:";
+	info += "memory-usage:";
 	info += GetMemoryStatus();
 
 	info += "\n";
 
-	info += "cpu:";
+	info += "cpu-usage:";
 	info += GetCPULoad();
 
 	info += "\n";
