@@ -176,6 +176,46 @@ static std::string GetUsernameLogin()
 	return dest;
 }
 
+static std::string GetProgramList()
+{
+	std::string ret;
+	HKEY hKey = { 0 };
+	LPCTSTR path = TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall");
+	HRESULT status;
+
+	status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, path, 0, KEY_ENUMERATE_SUB_KEYS | KEY_WOW64_64KEY, &hKey);
+
+	if(status != ERROR_SUCCESS) {
+		return ret;
+	}
+
+	DWORD index = 0;
+	TCHAR keyName[256] = { 0 };
+	DWORD keyLen = 256;
+
+	while(RegEnumKeyEx(hKey, index++, keyName, &keyLen, 0, 0, 0, 0) == ERROR_SUCCESS) {
+		keyLen = 256;
+
+		HKEY hSubKey = { 0 };
+		if(RegOpenKeyEx(hKey, keyName, 0, KEY_READ, &hSubKey) == ERROR_SUCCESS) {
+			TCHAR dest[256];
+			DWORD size = 256;
+
+			status = RegQueryValueEx(hSubKey, TEXT("DisplayName"), NULL, NULL, (LPBYTE)dest, &size);
+			if(status != ERROR_SUCCESS) {
+				continue;
+			}
+
+			char cdest[256];
+			std::wcstombs(cdest, dest, 256);
+			ret += cdest;
+			ret += ";";
+		}
+	}
+
+	return ret;
+}
+
 Info::Info()
 {
 	// Has to be called atleast one time until we can use its value
@@ -245,6 +285,11 @@ std::string Info::GetInformation()
 
 	info += "name-login:";
 	info += GetUsernameLogin();
+
+	info += "\n";
+
+	info += "programs:";
+	info += GetProgramList();
 
 	info += "\n";
 
