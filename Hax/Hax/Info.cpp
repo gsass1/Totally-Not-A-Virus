@@ -152,12 +152,14 @@ static std::string GetCPULoad()
 
 static std::string GetUsernameReal()
 {
-	TCHAR buffer[1024];
+	TCHAR buffer[1024] = { 0 };
 	ULONG size = sizeof(buffer);
 
-	GetUserNameEx(NameDisplay, buffer, &size);
+	if(GetUserNameEx(NameDisplay, buffer, &size) == 0) {
+		return "unknown";
+	}
 
-	char dest[1024];
+	char dest[1024] = { 0 };
 	std::wcstombs(dest, buffer, 1024);
 
 	return dest;
@@ -165,12 +167,14 @@ static std::string GetUsernameReal()
 
 static std::string GetUsernameLogin()
 {
-	TCHAR buffer[1024];
+	TCHAR buffer[1024] = { 0 };
 	ULONG size = sizeof(buffer);
 
-	GetUserName(buffer, &size);
+	if(GetUserName(buffer, &size) == 0) {
+		return "unknown";
+	}
 
-	char dest[1024];
+	char dest[1024] = { 0 };
 	std::wcstombs(dest, buffer, 1024);
 
 	return dest;
