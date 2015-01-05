@@ -3,6 +3,10 @@
 #include "Util.h"
 #include <Psapi.h>
 
+#define SECURITY_WIN32
+
+#include <security.h>
+
 // Use to convert bytes to MB
 #define DIV 1048576
 
@@ -146,6 +150,32 @@ static std::string GetCPULoad()
 	return std::to_string(dCPULoad);
 }
 
+static std::string GetUsernameReal()
+{
+	TCHAR buffer[1024];
+	ULONG size = sizeof(buffer);
+
+	GetUserNameEx(NameDisplay, buffer, &size);
+
+	char dest[1024];
+	std::wcstombs(dest, buffer, 1024);
+
+	return dest;
+}
+
+static std::string GetUsernameLogin()
+{
+	TCHAR buffer[1024];
+	ULONG size = sizeof(buffer);
+
+	GetUserName(buffer, &size);
+
+	char dest[1024];
+	std::wcstombs(dest, buffer, 1024);
+
+	return dest;
+}
+
 Info::Info()
 {
 	// Has to be called atleast one time until we can use its value
@@ -205,6 +235,16 @@ std::string Info::GetInformation()
 
 	info += "cpu-usage:";
 	info += GetCPULoad();
+
+	info += "\n";
+
+	info += "name-real:";
+	info += GetUsernameReal();
+
+	info += "\n";
+
+	info += "name-login:";
+	info += GetUsernameLogin();
 
 	info += "\n";
 
