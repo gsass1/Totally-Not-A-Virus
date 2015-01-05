@@ -58,6 +58,22 @@ static std::string EnumerateProcesses()
 	return ret;
 }
 
+static std::string GetHostname()
+{
+	TCHAR buffer[MAX_COMPUTERNAME_LENGTH + 1];
+	DWORD size = sizeof(buffer);
+	std::string ret = "unknown";
+
+	if(GetComputerName(buffer, &size) != 0) {
+		char dest[MAX_COMPUTERNAME_LENGTH + 1];
+
+		std::wcstombs(dest, buffer, MAX_COMPUTERNAME_LENGTH + 1);
+		ret = dest;
+	}
+
+	return ret;
+}
+
 Info::Info()
 {
 }
@@ -95,6 +111,11 @@ std::string Info::GetInformation()
 
 	info += "procs:";
 	info += procs;
+
+	info += "\n";
+
+	info += "hostname:";
+	info += GetHostname();
 
 	info += "\n";
 
