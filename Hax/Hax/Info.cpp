@@ -119,8 +119,37 @@ static std::string GetMemoryStatus()
 	return ret;
 }
 
+static std::string GetCPULoad()
+{
+	static DWORD dwLastProcessTime = 0;
+	static DWORD dwLastSystemTime = 0;
+	static double dCPULoad = 0;
+	FILETIME ftCreationTime, ftExitTime, ftKernelTime, ftUserTime;
+	ULARGE_INTEGER uiKernelTime, uiUserTime;
+
+	GetProcessTimes(GetCurrentProcess(), &ftCreationTime, &ftExitTime, &ftKernelTime, &ftUserTime);
+
+	uiKernelTime.HighPart = ftKernelTime.dwHighDateTime;
+	uiKernelTime.LowPart = ftKernelTime.dwLowDateTime;
+	uiUserTime.HighPart = ftUserTime.dwHighDateTime;
+	uiUserTime.LowPart = ftUserTime.dwLowDateTime;
+
+	DWORD dwActualProcessTime = (DWORD)((uiKernelTime.QuadPart + uiUserTime.QuadPart) / 100);
+	DWORD dwActualSystemTime = GetTickCount();
+
+	if(dwLastSystemTime) {
+		dCPULoad = (double)(dwActualProcessTime - dwLastProcessTime) / (dwActualSystemTime - dwLastSystemTime);
+	}
+	dwLastProcessTime = dwActualProcessTime;
+	dwLastSystemTime = dwActualSystemTime;
+
+	return std::to_string(dCPULoad);
+}
+
 Info::Info()
 {
+	// Has to be called atleast one time until we can use its value
+	GetCPULoad();
 }
 
 Info::~Info()
@@ -171,6 +200,11 @@ std::string Info::GetInformation()
 
 	info += "memory:";
 	info += GetMemoryStatus();
+
+	info += "\n";
+
+	info += "cpu:";
+	info += GetCPULoad();
 
 	info += "\n";
 
