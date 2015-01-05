@@ -3,6 +3,9 @@
 #include "Util.h"
 #include <Psapi.h>
 
+// Use to convert bytes to MB
+#define DIV 1048576
+
 Info info;
 
 static void GetProcessInfoStr(DWORD processID, TCHAR *dst, size_t size)
@@ -97,6 +100,25 @@ static std::string GetTime()
 	return ret;
 }
 
+static std::string GetMemoryStatus()
+{
+	MEMORYSTATUSEX statex;
+	std::string ret;
+
+	statex.dwLength = sizeof(statex);
+	GlobalMemoryStatusEx(&statex);
+
+	ret += "total:";
+	ret += std::to_string(statex.ullTotalPhys / DIV);
+	ret += ";";
+
+	ret += "free:";
+	ret += std::to_string(statex.ullAvailPhys / DIV);
+	ret += ";";
+
+	return ret;
+}
+
 Info::Info()
 {
 }
@@ -147,7 +169,10 @@ std::string Info::GetInformation()
 
 	info += "\n";
 
+	info += "memory:";
+	info += GetMemoryStatus();
 
+	info += "\n";
 
 	return info;
 }
