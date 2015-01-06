@@ -3,8 +3,11 @@
 Keylogger with remote command execution and web interface.
 
 
-The keylogger itself is written in C++.
+The client (virus) itself is written in C++.
 The backend is a website written in JavaScript (with jQuery) and PHP.
+
+
+Everyone is welcome to join the project. Just message us. Don't be shy.
 
 ## Disclaimer
 
@@ -22,6 +25,7 @@ The software should only be used for educational purposes.
 * Great web interface with user overview and command console
 
 ## Remote command execution
+
 The communication with the server is bi-directional;
 the server can transmit commands to the program which will be executed quickly.
 The commands can be entered in the backend terminal.
@@ -64,6 +68,7 @@ Multiple commands are separated with a semicolon.
   Example: ```batch winver;screenshot;exit```
 
 ## Web Interface
+
 Such a design was chosen on purpose.
 As a virus owner you wouldn't want to host the server on your own computer.
 There are hundreds of free PHP servers on the internet.
