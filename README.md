@@ -11,6 +11,9 @@ The backend is a website written in JavaScript (with jQuery) and PHP.
 We are not responsible for any harm or damage caused by this software.
 Use on your own risk.
 
+
+The software should only be used for educational purposes.
+
 ## Capabilities
 
 * Key logging & screenshots
