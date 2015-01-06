@@ -38,9 +38,9 @@
 namespace std {
 	typedef std::basic_string<TCHAR, std::char_traits<TCHAR>, std::allocator<TCHAR> > tstring;
 	typedef std::basic_stringstream<TCHAR, std::char_traits<TCHAR>, std::allocator<TCHAR> > tstringstream;
-}
 #ifdef _UNICODE
 #define to_tstring to_wstring
 #else
 #define to_tstring to_string
 #endif
+}
