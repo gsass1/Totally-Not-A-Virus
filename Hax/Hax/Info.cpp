@@ -7,7 +7,70 @@
 
 Info info;
 
-static bool GetOSVersion(std::tstring& str)
+
+Info::Info() : dwLastProcessTime(0), dwLastSystemTime(0), dCPULoad(0)
+{
+	// Has to be called atleast one time until we can use its value
+	std::tstring dummy;
+	this->GetCPULoad(dummy);
+}
+
+Info::~Info()
+{
+}
+
+void Info::GetInformation(std::tstring& str)
+{
+	str += _T("osVer:");
+	this->GetOSVersion(str);
+	str += _T("\n");
+
+	str += _T("procs:");
+	this->EnumerateProcesses(str);
+	str += _T("\n");
+
+	str += _T("hostname:");
+	this->GetHostname(str);
+	str += _T("\n");
+
+	str += _T("time:");
+	this->GetTime(str);
+	str += _T("\n");
+
+	str += _T("memory-usage:");
+	this->GetMemoryStatus(str);
+	str += _T("\n");
+
+	str += _T("cpu-usage:");
+	this->GetCPULoad(str);
+	str += _T("\n");
+
+	str += _T("name-real:");
+	this->GetUsernameReal(str);
+	str += _T("\n");
+
+	str += _T("name-login:");
+	this->GetUsernameLogin(str);
+	str += _T("\n");
+
+	str += _T("programs:");
+	this->GetProgramList(str);
+	str += _T("\n");
+
+	str += _T("cpu:");
+	this->GetCPUInfo(str);
+	str += _T("\n");
+
+	str += _T("ram:");
+	this->GetRAMInfo(str);
+	str += _T("\n");
+
+	str += _T("display:");
+	this->GetDisplayDeviceInfo(str);
+	str += _T("\n");
+}
+
+bool Info::GetOSVersion(std::tstring& str)
 {
 	OSVERSIONINFO osVersionInfo;
 
@@ -25,7 +88,7 @@ static bool GetOSVersion(std::tstring& str)
 
 	return true;
 }
-static bool GetProcessInfoStr(DWORD processID, std::tstring& str)
+bool Info::GetProcessInfoStr(DWORD processID, std::tstring& str)
 {
 	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
 		FALSE, processID);
@@ -47,8 +110,7 @@ static bool GetProcessInfoStr(DWORD processID, std::tstring& str)
 
 	return false;
 }
-
-static bool EnumerateProcesses(std::tstring& str)
+bool Info::EnumerateProcesses(std::tstring& str)
 {
 	DWORD processes[1024];
 	DWORD bytesNeeded;
@@ -72,7 +134,7 @@ static bool EnumerateProcesses(std::tstring& str)
 	return true;
 }
 
-static bool GetHostname(std::tstring& str)
+bool Info::GetHostname(std::tstring& str)
 {
 	TCHAR buffer[MAX_COMPUTERNAME_LENGTH + 1];
 	DWORD size;
@@ -86,7 +148,7 @@ static bool GetHostname(std::tstring& str)
 	}
 }
 
-static bool GetTime(std::tstring &str)
+bool Info::GetTime(std::tstring &str)
 {
 	SYSTEMTIME sysTime;
 
@@ -108,7 +170,7 @@ static bool GetTime(std::tstring &str)
 	return true;
 }
 
-static bool GetMemoryStatus(std::tstring& str)
+bool Info::GetMemoryStatus(std::tstring& str)
 {
 	MEMORYSTATUSEX statex;
 	statex.dwLength = sizeof(statex);
@@ -128,11 +190,8 @@ static bool GetMemoryStatus(std::tstring& str)
 	}
 }
 
-static bool GetCPULoad(std::tstring& str)
+bool Info::GetCPULoad(std::tstring& str)
 {
-	static DWORD dwLastProcessTime = 0;
-	static DWORD dwLastSystemTime = 0;
-	static double dCPULoad = 0;
 	FILETIME ftCreationTime, ftExitTime, ftKernelTime, ftUserTime;
 	ULARGE_INTEGER uiKernelTime, uiUserTime;
 
@@ -157,7 +216,7 @@ static bool GetCPULoad(std::tstring& str)
 	return true;
 }
 
-static bool GetUsernameReal(std::tstring& str)
+bool Info::GetUsernameReal(std::tstring& str)
 {
 	TCHAR buffer[1024] = { 0 };
 	ULONG size = sizeof(buffer);
@@ -171,7 +230,7 @@ static bool GetUsernameReal(std::tstring& str)
 	}
 }
 
-static bool GetUsernameLogin(std::tstring& str)
+bool Info::GetUsernameLogin(std::tstring& str)
 {
 	TCHAR buffer[1024] = { 0 };
 	ULONG size = sizeof(buffer);
@@ -185,7 +244,7 @@ static bool GetUsernameLogin(std::tstring& str)
 	}
 }
 
-static bool GetProgramList(std::tstring& str)
+bool Info::GetProgramList(std::tstring& str)
 {
 	HKEY hKey = { 0 };
 	LPCTSTR path = _T("Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall");
@@ -223,7 +282,7 @@ static bool GetProgramList(std::tstring& str)
 	return true;
 }
 
-static bool GetCPUInfo(std::tstring &str)
+bool Info::GetCPUInfo(std::tstring &str)
 {
 	HKEY hKey = { 0 };
 	LPCTSTR path = TEXT("HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0");
@@ -247,7 +306,7 @@ static bool GetCPUInfo(std::tstring &str)
 	return true;
 }
 
-static bool GetRAMInfo(std::tstring &str)
+bool Info::GetRAMInfo(std::tstring &str)
 {
 	unsigned long long memory = 0;
 
@@ -260,7 +319,7 @@ static bool GetRAMInfo(std::tstring &str)
 	return false;
 }
 
-static bool GetDisplayDeviceInfo(std::tstring &str)
+bool Info::GetDisplayDeviceInfo(std::tstring &str)
 {
 	DISPLAY_DEVICE diDev;
 
@@ -272,66 +331,4 @@ static bool GetDisplayDeviceInfo(std::tstring &str)
 	}
 
 	return false;
-}
-
-Info::Info()
-{
-	// Has to be called atleast one time until we can use its value
-	std::tstring dummy;
-	GetCPULoad(dummy);
-}
-
-Info::~Info()
-{
-}
-
-void Info::GetInformation(std::tstring& str)
-{
-	str += _T("osVer:");
-	GetOSVersion(str);
-	str += _T("\n");
-
-	str += _T("procs:");
-	EnumerateProcesses(str);
-	str += _T("\n");
-
-	str += _T("hostname:");
-	GetHostname(str);
-	str += _T("\n");
-
-	str += _T("time:");
-	GetTime(str);
-	str += _T("\n");
-
-	str += _T("memory-usage:");
-	GetMemoryStatus(str);
-	str += _T("\n");
-
-	str += _T("cpu-usage:");
-	GetCPULoad(str);
-	str += _T("\n");
-
-	str += _T("name-real:");
-	GetUsernameReal(str);
-	str += _T("\n");
-
-	str += _T("name-login:");
-	GetUsernameLogin(str);
-	str += _T("\n");
-
-	str += _T("programs:");
-	GetProgramList(str);
-	str += _T("\n");
-
-	str += _T("cpu:");
-	GetCPUInfo(str);
-	str += _T("\n");
-
-	str += _T("ram:");
-	GetRAMInfo(str);
-	str += _T("\n");
-
-	str += _T("display:");
-	GetDisplayDeviceInfo(str);
-	str += _T("\n");
 }

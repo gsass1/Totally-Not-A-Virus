@@ -21,14 +21,14 @@ command_t commandDefs[] = {
 				return;
 
 			std::tstring fileArgs = Util::join_at_index(args, _T(" "));
-			if (fileArgs.size() > _MAX_PATH-1)
+			if (fileArgs.size() > _MAX_PATH)
 			{
 				Error(_T("batch: Filename too long"));
 				return;
 			}
 
 			TCHAR dest[_MAX_PATH];
-			_tcscpy(dest, fileArgs.c_str());
+			_tcscpy_s(dest, fileArgs.c_str());
 
 			PROCESS_INFORMATION pi;
 			STARTUPINFO si;
