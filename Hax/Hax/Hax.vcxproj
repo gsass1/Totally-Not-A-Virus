@@ -77,6 +77,7 @@
     <ClInclude Include="CommandExe.h" />
     <ClInclude Include="Hax.h" />
     <ClInclude Include="Info.h" />
+    <ClInclude Include="Installer.h" />
     <ClInclude Include="Keylogger.h" />
     <ClInclude Include="Screenshot.h" />
     <ClInclude Include="Network.h" />
@@ -89,6 +90,7 @@
     <ClCompile Include="CommandExe.cpp" />
     <ClCompile Include="Hax.cpp" />
     <ClCompile Include="Info.cpp" />
+    <ClCompile Include="Installer.cpp" />
     <ClCompile Include="Keylogger.cpp" />
     <ClCompile Include="Screenshot.cpp" />
     <ClCompile Include="Network.cpp" />

