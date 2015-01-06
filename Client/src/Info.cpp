@@ -8,6 +8,8 @@
 
 Info info;
 
+#define SAFE_RELEASE(p) if(p) { p->Release(); p = NULL; }
+
 
 Info::Info() : dwLastProcessTime(0), dwLastSystemTime(0), dCPULoad(0)
 {
@@ -402,20 +404,19 @@ bool Info::GetAudioDeviceInfo(std::tstring &str)
 			goto clear;
 		}
 
-		wcstombs(idDest, varName.pwszVal, 1024);
-
-		str += idDest;
+		str += Util::ws2t(varName.pwszVal);
 		str += ";";
 
 		PropVariantClear(&varName);
-		propStore->Release();
+		SAFE_RELEASE(propStore);
 	}
 
 clear:
 	PropVariantClear(&varName);
-	propStore->Release();
-	device->Release();
-	enumerator->Release();
+	SAFE_RELEASE(propStore);
+	SAFE_RELEASE(device);
+	SAFE_RELEASE(collection);
+	SAFE_RELEASE(enumerator);
 
 	return ret;
 }
