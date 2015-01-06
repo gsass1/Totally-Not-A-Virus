@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "CommandExe.h"
-#include "Hax.h"
 #include "Keylogger.h"
 #include "Installer.h"
 #include "Network.h"

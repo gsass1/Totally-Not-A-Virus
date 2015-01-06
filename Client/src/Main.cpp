@@ -1,6 +1,4 @@
-
 #include "stdafx.h"
-#include "Hax.h"
 #include "Keylogger.h"
 #include "Installer.h"
 

