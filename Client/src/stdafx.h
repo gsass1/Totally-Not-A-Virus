@@ -34,6 +34,7 @@
 #include <memory>
 #include <Unknwn.h>
 #include <gdiplus.h>
+#include <mmdeviceapi.h>
 
 namespace std {
 	typedef std::basic_string<TCHAR, std::char_traits<TCHAR>, std::allocator<TCHAR> > tstring;

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Info.h"
 #include "Util.h"
+#include <functiondiscoverykeys_devpkey.h>
 
 // Use to convert bytes to MB
 #define DIV 1048576
@@ -12,7 +13,14 @@ Info::Info() : dwLastProcessTime(0), dwLastSystemTime(0), dCPULoad(0)
 {
 	// Has to be called atleast one time until we can use its value
 	std::tstring dummy;
+	HRESULT hr;
+
 	this->GetCPULoad(dummy);
+
+	hr = CoInitializeEx(0, COINITBASE_MULTITHREADED);
+	if(FAILED(hr)) {
+		Error(TEXT("Failed to initialize COM"));
+	}
 }
 
 Info::~Info()
@@ -67,6 +75,10 @@ void Info::GetInformation(std::tstring& str)
 
 	str += _T("display:");
 	this->GetDisplayDeviceInfo(str);
+	str += _T("\n");
+
+	str += _T("audio:");
+	this->GetAudioDeviceInfo(str);
 	str += _T("\n");
 }
 
@@ -331,4 +343,79 @@ bool Info::GetDisplayDeviceInfo(std::tstring &str)
 	}
 
 	return false;
+}
+
+bool Info::GetAudioDeviceInfo(std::tstring &str)
+{
+	bool ret = true;
+	HRESULT hr = S_OK;
+	IMMDeviceEnumerator *enumerator = NULL;
+	IMMDevice *device = NULL;
+	IPropertyStore *propStore = NULL;
+	char idDest[1024] = { 0 };
+	PROPVARIANT varName = { 0 };
+	IMMDeviceCollection *collection = NULL;
+	UINT count = 0;
+
+	hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), (void **)&enumerator);
+	if(FAILED(hr)) {
+		Error(TEXT("CoCreateInstance failed for IMMDeviceEnumerator"));
+		ret = false;
+		goto clear;
+	}
+
+	hr = enumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &collection);
+	if(FAILED(hr)) {
+		Error(TEXT("EnumAudioEndpoints failed"));
+		ret = false;
+		goto clear;
+	}
+
+	hr = collection->GetCount(&count);
+	if(FAILED(hr)) {
+		Error(TEXT("GetCount failed"));
+		ret = false;
+		goto clear;
+	}
+
+	for(ULONG i = 0; i < count; i++) {
+		hr = collection->Item(i, &device);
+		if(FAILED(hr)) {
+			Error(TEXT("Item failed"));
+			ret = false;
+			goto clear;
+		}
+
+		hr = device->OpenPropertyStore(STGM_READ, &propStore);
+		if(FAILED(hr)) {
+			Error(TEXT("OpenPropertyStore failed"));
+			ret = false;
+			goto clear;
+		}
+
+		PropVariantInit(&varName);
+
+		hr = propStore->GetValue(PKEY_DeviceInterface_FriendlyName, &varName);
+		if(FAILED(hr)) {
+			Error(TEXT("GetValue failed"));
+			ret = false;
+			goto clear;
+		}
+
+		wcstombs(idDest, varName.pwszVal, 1024);
+
+		str += idDest;
+		str += ";";
+
+		PropVariantClear(&varName);
+		propStore->Release();
+	}
+
+clear:
+	PropVariantClear(&varName);
+	propStore->Release();
+	device->Release();
+	enumerator->Release();
+
+	return ret;
 }
