@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Keylogger.h"
-#include "Hax.h"
 #include "Network.h"
 #include "Settings.h"
 #include "Util.h"

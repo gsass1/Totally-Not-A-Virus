@@ -76,4 +76,6 @@ The owner can use the web interface through a proxy and stay safe.
 2. Change the server URLs in the following file:
    /Hax/Hax/Settings.h
 
-3. Compile the project 'Hax' using Visual Studio. Support for C++11 is required.
+3. Use CMake to generate a project file for your Visual Studio version.
+
+4. Compile the project 'Hax' using Visual Studio. Support for C++11 is required.

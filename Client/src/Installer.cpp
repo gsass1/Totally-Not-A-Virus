@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Installer.h"
-#include "Hax.h"
 #include "Settings.h"
 
 Installer installer;

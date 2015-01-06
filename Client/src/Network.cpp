@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Network.h"
-#include "Hax.h"
 #include "Settings.h"
 #include "Util.h"
 
