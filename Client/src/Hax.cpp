@@ -7,7 +7,7 @@
 
 TCHAR semName[] = _T("VSem");
 
-int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
+extern "C" int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
 	HANDLE hSem = CreateSemaphore(NULL, 1, 1, semName);
 	if (WaitForSingleObject(hSem, 0) == WAIT_TIMEOUT)
