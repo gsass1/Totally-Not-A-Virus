@@ -34,8 +34,12 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 
 	SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
 
-	struct hostent *host;
-	host = gethostbyname(V_NET_DOMAIN);
+	struct hostent *host = gethostbyname(V_NET_DOMAIN);
+	if (host == nullptr)
+	{
+		Error(_T("gethostbyname failed"));
+		return false;
+	}
 
 	SOCKADDR_IN sin;
 	sin.sin_addr.s_addr = *((unsigned long*)host->h_addr);

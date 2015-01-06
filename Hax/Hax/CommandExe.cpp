@@ -127,6 +127,7 @@ command_t commandDefs[] = {
 				Error(_T("exec: Failed to create file"));
 				goto g_1;
 			}
+
 			DWORD written;
 			WriteFile(hFile, resp, resp_len, &written, 0);
 			if (written != resp_len)

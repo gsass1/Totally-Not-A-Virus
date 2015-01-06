@@ -27,7 +27,6 @@ static bool GetOSVersion(std::tstring& str)
 }
 static bool GetProcessInfoStr(DWORD processID, std::tstring& str)
 {
-	TCHAR processName[MAX_PATH] = _T("unknown");
 	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
 		FALSE, processID);
 
@@ -38,12 +37,12 @@ static bool GetProcessInfoStr(DWORD processID, std::tstring& str)
 	HMODULE hMod;
 	DWORD bytesNeeded;
 
-	if(EnumProcessModules(hProcess, &hMod, sizeof(hMod), &bytesNeeded)) {
-		GetModuleBaseName(hProcess, hMod, processName,
-			sizeof(processName) / sizeof(TCHAR));
-
-		str += processName;
-		return true;
+	if (EnumProcessModules(hProcess, &hMod, sizeof(hMod), &bytesNeeded)) {
+		TCHAR processName[MAX_PATH];
+		if (GetModuleBaseName(hProcess, hMod, processName, sizeof(processName) / sizeof(TCHAR))) {
+			str += processName;
+			return true;
+		}
 	}
 
 	return false;
@@ -277,7 +276,6 @@ void Info::GetInformation(std::tstring& str)
 	str += _T("osVer:");
 	GetOSVersion(str);
 	str += _T("\n");
-
 
 	str += _T("procs:");
 	EnumerateProcesses(str);
