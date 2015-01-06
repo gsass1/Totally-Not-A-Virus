@@ -1,8 +1,6 @@
 #pragma once
+#include "stdafx.h"
 
-#pragma comment(lib, "secur32.lib")
-
-#include <string>
 
 class Info
 {
@@ -10,7 +8,7 @@ public:
 	Info();
 	~Info();
 
-	std::string GetInformation();
+	void GetInformation(std::tstring& str);
 };
 
 extern Info info;

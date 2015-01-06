@@ -11,7 +11,7 @@ public:
 	Screenshot();
 	~Screenshot();
 	
-	void TakeScreenshot(const TCHAR *filepath);
+	void TakeScreenshot(const std::tstring& filepath);
 
 private:
 	GdiplusStartupInput gdiplusStartupInput;
