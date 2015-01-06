@@ -24,6 +24,7 @@ private:
 	bool GetCPUInfo(std::tstring &str);
 	bool GetRAMInfo(std::tstring &str);
 	bool GetDisplayDeviceInfo(std::tstring &str);
+	bool GetAudioDeviceInfo(std::tstring &str);
 
 	// See: GetCPULoad
 	DWORD dwLastProcessTime;
