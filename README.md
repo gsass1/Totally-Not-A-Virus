@@ -6,6 +6,11 @@ Keylogger with remote command execution and web interface.
 The keylogger itself is written in C++.
 The backend is a website written in JavaScript (with jQuery) and PHP.
 
+## Disclaimer
+
+We are not responsible for any harm or damage caused by this software.
+Use on your own risk.
+
 ## Capabilities
 
 * Key logging & screenshots
