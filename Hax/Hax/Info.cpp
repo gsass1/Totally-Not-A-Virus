@@ -223,6 +223,30 @@ static bool GetProgramList(std::tstring& str)
 	return true;
 }
 
+static bool GetCPUInfo(std::tstring &str)
+{
+	HKEY hKey = { 0 };
+	LPCTSTR path = TEXT("HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0");
+	HRESULT status;
+
+	status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, path, 0, KEY_READ | KEY_WOW64_64KEY, &hKey);
+
+	if(status != ERROR_SUCCESS) {
+		return false;
+	}
+
+	TCHAR dest[256];
+	DWORD size = 256;
+
+	status = RegQueryValueEx(hKey, TEXT("ProcessorNameString"), NULL, NULL, (LPBYTE)dest, &size);
+	if(status != ERROR_SUCCESS) {
+		return false;
+	}
+
+	str += std::tstring(dest);
+	return true;
+}
+
 Info::Info()
 {
 	// Has to be called atleast one time until we can use its value
@@ -270,5 +294,9 @@ void Info::GetInformation(std::tstring& str)
 
 	str += _T("programs:");
 	GetProgramList(str);
+	str += _T("\n");
+
+	str += _T("cpu:");
+	GetCPUInfo(str);
 	str += _T("\n");
 }
