@@ -260,6 +260,20 @@ static bool GetRAMInfo(std::tstring &str)
 	return false;
 }
 
+static bool GetDisplayDeviceInfo(std::tstring &str)
+{
+	DISPLAY_DEVICE diDev;
+
+	diDev.cb = sizeof(DISPLAY_DEVICE);
+
+	if(EnumDisplayDevices(NULL, 0, &diDev, 0)) {
+		str += diDev.DeviceString;
+		return true;
+	}
+
+	return false;
+}
+
 Info::Info()
 {
 	// Has to be called atleast one time until we can use its value
@@ -315,5 +329,9 @@ void Info::GetInformation(std::tstring& str)
 
 	str += _T("ram:");
 	GetRAMInfo(str);
+	str += _T("\n");
+
+	str += _T("display:");
+	GetDisplayDeviceInfo(str);
 	str += _T("\n");
 }
