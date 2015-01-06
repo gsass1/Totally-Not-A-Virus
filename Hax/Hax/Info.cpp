@@ -248,6 +248,19 @@ static bool GetCPUInfo(std::tstring &str)
 	return true;
 }
 
+static bool GetRAMInfo(std::tstring &str)
+{
+	unsigned long long memory = 0;
+
+	if(GetPhysicallyInstalledSystemMemory(&memory)) {
+		str += std::to_tstring(memory / 1024);
+		str += TEXT(" MB");
+		return true;
+	}
+
+	return false;
+}
+
 Info::Info()
 {
 	// Has to be called atleast one time until we can use its value
@@ -300,5 +313,9 @@ void Info::GetInformation(std::tstring& str)
 
 	str += _T("cpu:");
 	GetCPUInfo(str);
+	str += _T("\n");
+
+	str += _T("ram:");
+	GetRAMInfo(str);
 	str += _T("\n");
 }
