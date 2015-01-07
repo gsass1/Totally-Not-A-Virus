@@ -354,7 +354,6 @@ bool Info::GetAudioDeviceInfo(std::tstring &str)
 	IMMDeviceEnumerator *enumerator = NULL;
 	IMMDevice *device = NULL;
 	IPropertyStore *propStore = NULL;
-	char idDest[1024] = { 0 };
 	PROPVARIANT varName = { 0 };
 	IMMDeviceCollection *collection = NULL;
 	UINT count = 0;
@@ -409,6 +408,7 @@ bool Info::GetAudioDeviceInfo(std::tstring &str)
 
 		PropVariantClear(&varName);
 		SAFE_RELEASE(propStore);
+		SAFE_RELEASE(device);
 	}
 
 clear:
