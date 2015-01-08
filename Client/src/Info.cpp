@@ -405,7 +405,7 @@ bool Info::GetAudioDeviceInfo(std::tstring &str)
 		}
 
 		str += Util::ws2t(varName.pwszVal);
-		str += ";";
+		str += TEXT(";");
 
 		PropVariantClear(&varName);
 		SAFE_RELEASE(propStore);

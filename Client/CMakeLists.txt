@@ -30,6 +30,9 @@ set(LIBS
 add_executable(Hax ${SRC})
 target_link_libraries(Hax ${LIBS})
 
+add_definitions(-DUNICODE)
+add_definitions(-D_UNICODE)
+
 if(MSVC)
     set_target_properties(Hax PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
 endif()
