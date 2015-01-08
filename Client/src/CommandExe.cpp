@@ -188,7 +188,7 @@ void CommandExe::Run(const std::tstring& cmds)
 	std::vector<std::tstring> commands = Util::split(cmds, ';');
 	for (auto &cmd : commands) {
 		std::vector<std::tstring> args = Util::split(cmd, ' ');
-		args.erase(std::remove_if(args.begin(), args.end(), [&](const std::tstring &s) { return std::all_of(s.begin(), s.end(), isspace); }), args.end());
+		args.erase(std::remove_if(args.begin(), args.end(), [&](const std::tstring &s) { return std::all_of(s.begin(), s.end(), _istspace); }), args.end());
 		if (args.size()) {
 			auto result = std::find_if(std::begin(commandDefs), std::end(commandDefs), [&](const command_t & cmd) { return cmd.name == args[0].c_str(); });
 			if (result != std::end(commandDefs)) {
