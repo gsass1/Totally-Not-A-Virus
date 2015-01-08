@@ -15,6 +15,7 @@ set(SRC
     src/Network.h
     src/Screenshot.cpp
     src/Screenshot.h
+    src/Settings.h
     src/stdafx.cpp
     src/stdafx.h
     src/targetver.h
