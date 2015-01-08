@@ -78,9 +78,11 @@ The owner can use the web interface through a proxy and stay safe.
 
 1. Upload all files in 'Backend' to a web server with PHP.
 
-2. Change the server URLs in the following file:
-   /Hax/Hax/Settings.h
+2. Use CMake to generate a project file for your Visual Studio version.
 
-3. Use CMake to generate a project file for your Visual Studio version.
+3. (Optional) Change charset in project settings to Unicode.
 
-4. Compile the project 'Hax' using Visual Studio. Support for C++11 is required.
+4. Change the server URLs in the following file:
+   /Client/src/Settings.h
+
+5. Compile the project using Visual Studio. Support for C++11 is required.
