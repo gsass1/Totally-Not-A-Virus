@@ -222,25 +222,36 @@ function list_screenshots() {
 		data: {req : 'list_screenshots'}
 	})
 	.done(function(data) {
-		var oldnum = l_screenshots.length;
-		$.extend(l_screenshots, data);
-		var newnum = l_screenshots.length;
+		for (var i = 0; i < data.length; i++) {
+			if (l_screenshots.indexOf(data[i]) < 0) {
+				l_screenshots.push(data[i]);
+				var link = dir_screenshots+data[i];
+				log('Loading new screenshot: ' + data[i]);
+				$screenshots.prepend(
+					$('<span class="imgcontainer"></span>').append(
+						$('<a></a>').attr('href', link).attr('target', '_blank')
+							.append($('<img></img>').attr('src', link))
+							.hide().fadeIn('slow'),
+						$('<button class="delbutton" onclick="del_screenshot(\''
+							+data[i]+'\')">X</button>')));
+			}
+		}
+		
+		var sc_copy = l_screenshots.slice();
+		
+		for (var i = 0; i < sc_copy.length; i++) {
+			if (data.indexOf(sc_copy[i]) < 0) {
+				var index = l_screenshots.indexOf(sc_copy[i]);
+				del_screenshot_element(index);
+			}
+		}
 		
 		log('Fetched ' + l_screenshots.length + ' screenshot names.');
-		
-		for (var i = oldnum; i < newnum; i++) {
-			var link = dir_screenshots+l_screenshots[i];
-			log('Loading new screenshot: ' + l_screenshots[i]);
-			$screenshots.prepend(
-				$('<span class="imgcontainer"></span>').append(
-					$('<a></a>').attr('href', link).attr('target', '_blank')
-						.append($('<img></img>').attr('src', link))
-						.hide().fadeIn('slow'),
-					$('<button class="delbutton" onclick="del_screenshot(\''
-						+l_screenshots[i]+'\')">X</button>')));
-			
-		}
 	});
+}
+function del_screenshot_element(index) {
+	$('a[href="'+dir_screenshots+l_screenshots[index]+'"]').parent().remove();
+	l_screenshots.splice(index, 1);
 }
 function del_screenshot(name) {
 
@@ -256,8 +267,7 @@ function del_screenshot(name) {
 	});
 	
 	log('Deleting image: ' + name);
-	$('a[href="'+dir_screenshots+l_screenshots[index]+'"]').parent().remove();
-	l_screenshots.splice(index, 1);
+	del_screenshot_element(index);
 }
 function list_files() {
 	$.ajax({
