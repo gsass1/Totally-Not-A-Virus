@@ -7,9 +7,5 @@ public:
 	CommandExe();
 	~CommandExe();
 	
-	void JoinThreads();
 	void Run(const std::tstring& cmds);
-
-private:
-	std::vector<std::thread> cmdThreads;
 };

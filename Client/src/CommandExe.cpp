@@ -10,6 +10,12 @@
 #include "Command.h"
 #include "CommandMessageBox.h"
 
+struct CommandThreadParams
+{
+	std::string name;
+	std::vector<std::tstring> args;
+};
+
 static Command *CreateCommandFromName(const std::string &name)
 {
 	if(name == "msgbox")
@@ -18,10 +24,18 @@ static Command *CreateCommandFromName(const std::string &name)
 		return NULL;
 }
 
-static int CommandThreadEntry(Command *command, const std::vector<std::tstring> &args)
+static DWORD WINAPI ExecuteCommand(LPVOID param)
 {
-	int ret = command->OnExecute(args);
+	CommandThreadParams *cmdParams = (CommandThreadParams *)param;
+
+	Command *command = CreateCommandFromName(cmdParams->name);
+	if(!command)
+		return 0;
+
+	bool ret = command->OnExecute(cmdParams->args);
+
 	delete command;
+	delete param;
 	return ret;
 }
 
@@ -33,21 +47,6 @@ CommandExe::CommandExe()
 CommandExe::~CommandExe()
 {
 
-}
-
-void CommandExe::JoinThreads()
-{
-	/* Join any command thread if they are done */
-	for(auto itr = cmdThreads.begin(); itr != cmdThreads.end();) {
-		if(!(*itr).joinable()) {
-			/* Only increment if we do not erase anything */
-			itr++;
-			continue;
-		}
-
-		(*itr).join();
-		itr = cmdThreads.erase(itr);
-	}
 }
 
 void CommandExe::Run(const std::tstring& cmds)
@@ -65,7 +64,11 @@ void CommandExe::Run(const std::tstring& cmds)
 			if(!command)
 				continue;
 
-			cmdThreads.push_back(std::thread(CommandThreadEntry, command, Util::split(Util::join_at_index(args, _T(" "), 1), ' ')));
+			CommandThreadParams *params = new CommandThreadParams();
+			params->name = args[0];
+			params->args = Util::split(Util::join_at_index(args, _T(" "), 1), ' ');
+
+			CreateThread(NULL, 0, ExecuteCommand, params, 0, NULL);
 		}
 	}
 }
