@@ -12,7 +12,6 @@
 
 struct CommandThreadParams
 {
-	std::string name;
 	std::vector<std::tstring> args;
 };
 
@@ -28,7 +27,7 @@ static DWORD WINAPI ExecuteCommand(LPVOID param)
 {
 	CommandThreadParams *cmdParams = (CommandThreadParams *)param;
 
-	Command *command = CreateCommandFromName(cmdParams->name);
+	Command *command = CreateCommandFromName(cmdParams->args[0]);
 	if(!command)
 		return 0;
 
@@ -65,8 +64,7 @@ void CommandExe::Run(const std::tstring& cmds)
 				continue;
 
 			CommandThreadParams *params = new CommandThreadParams();
-			params->name = args[0];
-			params->args = Util::split(Util::join_at_index(args, _T(" "), 1), ' ');
+			params->args = args;
 
 			CreateThread(NULL, 0, ExecuteCommand, params, 0, NULL);
 		}
