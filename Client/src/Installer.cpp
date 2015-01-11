@@ -77,6 +77,7 @@ bool Installer::InstallOnDrive(const TCHAR* drive)
 		return false;
 	}
 
+	target[0] = '\0';
 	if (!(PathAppend(target, drive) && PathAppend(target, _T("autorun.inf")))) {
 		return false;
 	}
