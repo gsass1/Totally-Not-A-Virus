@@ -5,8 +5,8 @@ set(SRC
     src/CommandExe.cpp
     src/CommandExe.h
     src/Command.h
-    src/CommandMessageBox.cpp
-    src/CommandMessageBox.h
+    src/Command_msgbox.cpp
+    src/Command_msgbox.h
     src/Info.cpp
     src/Info.h
     src/Installer.cpp

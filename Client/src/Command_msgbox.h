@@ -2,11 +2,11 @@
 
 #include "Command.h"
 
-class CommandMessageBox : public Command
+class Command_msgbox : public Command
 {
 public:
-	CommandMessageBox();
-	~CommandMessageBox();
+	Command_msgbox();
+	~Command_msgbox();
 
 	bool OnExecute(const std::vector<std::tstring> &args);
 };

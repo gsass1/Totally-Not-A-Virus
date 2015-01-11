@@ -8,7 +8,7 @@
 #include "Info.h"
 #include "Util.h"
 #include "Command.h"
-#include "CommandMessageBox.h"
+#include "Command_msgbox.h"
 
 struct CommandThreadParams
 {
@@ -18,7 +18,7 @@ struct CommandThreadParams
 static Command *CreateCommandFromName(const std::string &name)
 {
 	if(name == "msgbox")
-		return new CommandMessageBox();
+		return new Command_msgbox();
 	else
 		return NULL;
 }

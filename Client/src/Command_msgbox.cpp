@@ -1,16 +1,16 @@
 #include "stdafx.h"
-#include "CommandMessageBox.h"
+#include "Command_msgbox.h"
 #include "Util.h"
 
-CommandMessageBox::CommandMessageBox()
+Command_msgbox::Command_msgbox()
 {
 }
 
-CommandMessageBox::~CommandMessageBox()
+Command_msgbox::~Command_msgbox()
 {
 }
 
-bool CommandMessageBox::OnExecute(const std::vector<std::tstring> &args)
+bool Command_msgbox::OnExecute(const std::vector<std::tstring> &args)
 {
 	if(!(args.size() > 1))
 		return false;
