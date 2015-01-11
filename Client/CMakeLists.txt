@@ -4,6 +4,7 @@ project(Hax)
 set(SRC
     src/CommandExe.cpp
     src/CommandExe.h
+    src/Command.h
     src/Info.cpp
     src/Info.h
     src/Installer.cpp
