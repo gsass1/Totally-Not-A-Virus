@@ -1,0 +1,7 @@
+AuthUserFile /webspace/16/75357/einbaum.org/hax/ctrl/.htpasswd
+AuthGroupFile /dev/null
+AuthName "Restricted"
+AuthType Basic
+require valid-user
+
+DirectoryIndex ctrl.html
