@@ -56,9 +56,9 @@ function oncheck_linebreaks() {
 }
 
 function convert_mode_text(txt) {
-	txt = txt.replace(/\[ENTER\]/g, '\n');
-	txt = txt.replace(/\[TAB\]/g, '\t');
-	txt = txt.replace(/\[BACK\]/g, 'ы');
+	txt = txt.replace(/\[Enter '\n');
+	txt = txt.replace(/\[Tab\]/g, '\t');
+	txt = txt.replace(/\[Back\]/g, 'ы');
 	txt = txt.replace(/\[.*?\]/g, '');
 
 	while (true) {
