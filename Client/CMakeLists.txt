@@ -5,6 +5,8 @@ set(SRC
     src/CommandExe.cpp
     src/CommandExe.h
     src/Command.h
+    src/Command_batch.cpp
+    src/Command_batch.h
     src/Command_msgbox.cpp
     src/Command_msgbox.h
     src/Info.cpp

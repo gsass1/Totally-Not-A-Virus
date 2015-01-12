@@ -8,6 +8,7 @@
 #include "Info.h"
 #include "Util.h"
 #include "Command.h"
+#include "Command_batch.h"
 #include "Command_msgbox.h"
 
 struct CommandThreadParams
@@ -17,7 +18,9 @@ struct CommandThreadParams
 
 static Command *CreateCommandFromName(const std::string &name)
 {
-	if(name == "msgbox")
+	if(name == "batch")
+		return new Command_batch();
+	else if(name == "msgbox")
 		return new Command_msgbox();
 	else
 		return NULL;
