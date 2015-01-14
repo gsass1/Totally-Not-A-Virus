@@ -15,10 +15,12 @@ public:
 	void Run();
 	void Stop();
 
+	void SendNewThread(const std::tstring *keys);
+	void Send(const std::tstring *keys);
+
 private:
 
-    void CheckKey(short vkey);
-    void Send();
+	void CheckKey(short vkey);
 	void IncreaseSendInterval();
 	void DecreaseSendInterval();
 
@@ -27,7 +29,7 @@ private:
 
     CommandExe cmd;
 
-    std::vector<std::tstring> keysPressed;
+	std::tstring keysPressed;
     BYTE keysActive[256];
 	WCHAR keyBuf[256];
 };

