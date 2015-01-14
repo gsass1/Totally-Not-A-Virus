@@ -6,7 +6,7 @@
 
 Keylogger keylogger;
 
-const TCHAR* X = ((PTCHAR)~0);
+const TCHAR* X = ((const TCHAR*)~0);
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/dd375731%28v=vs.85%29.aspx
 const TCHAR* keyStrings[] =
@@ -32,7 +32,7 @@ const TCHAR* keyStrings[] =
 
 Keylogger::Keylogger() : shouldStop(false), sendInterval(V_SEND_INTERVAL_MIN)
 {
-	memset(keysActive, false, sizeof(keysActive));
+	memset(keysActive, 0, sizeof(keysActive));
 	memset(keyBuf, 0, sizeof(keyBuf));
 }
 Keylogger::~Keylogger()
