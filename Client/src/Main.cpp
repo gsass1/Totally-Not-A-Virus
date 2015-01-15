@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "Logger.h"
 #include "Keylogger.h"
 #include "Settings.h"
 #include "Installer.h"

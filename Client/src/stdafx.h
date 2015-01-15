@@ -46,8 +46,11 @@ namespace std {
 #endif
 }
 
+class Logger;
+extern Logger logger;
 #ifdef _DEBUG
-#define Error(msg) MessageBox(NULL, msg, NULL, MB_OK);
+#define Error(msg) do{logger.Send(msg);}while(0)
 #else
 #define Error(msg)
 #endif
+#include "Logger.h"
