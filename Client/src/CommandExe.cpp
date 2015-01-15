@@ -7,6 +7,7 @@
 #include "Util.h"
 #include "Command.h"
 #include "Command_batch.h"
+#include "Command_exec.h"
 #include "Command_exit.h"
 #include "Command_info.h"
 #include "Command_msgbox.h"
@@ -22,6 +23,8 @@ static Command *CreateCommandFromName(const std::string &name)
 {
 	if(name == "batch")
 		return new Command_batch();
+	else if(name == "exec")
+		return new Command_exec();
 	else if(name == "exit")
 		return new Command_exit();
 	else if(name == "info")
