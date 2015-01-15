@@ -1,23 +1,23 @@
 #pragma once
-#include "stdafx.h"
 
+#include "Command.h"
 
-class Info
+class Command_info : public Command
 {
 public:
-	Info();
-	~Info();
+	Command_info();
+	~Command_info();
 
-	void GetInformation(std::tstring& str);
+	bool OnExecute(const std::vector<std::tstring> &args);
 
 private:
+	void GetInformation(std::tstring& str);
 	bool GetOSVersion(std::tstring& str);
 	bool GetProcessInfoStr(DWORD processID, std::tstring& str);
 	bool EnumerateProcesses(std::tstring& str);
 	bool GetHostname(std::tstring& str);
 	bool GetTime(std::tstring &str);
 	bool GetMemoryStatus(std::tstring& str);
-	bool GetCPULoad(std::tstring& str);
 	bool GetUsernameReal(std::tstring& str);
 	bool GetUsernameLogin(std::tstring& str);
 	bool GetProgramList(std::tstring& str);
@@ -26,10 +26,8 @@ private:
 	bool GetDisplayDeviceInfo(std::tstring &str);
 	bool GetAudioDeviceInfo(std::tstring &str);
 
-	// See: GetCPULoad
-	DWORD dwLastProcessTime;
-	DWORD dwLastSystemTime;
-	double dCPULoad;
-};
+	static bool GetCPULoad(std::tstring& str);
 
-extern Info info;
+	static DWORD dwLastProcessTime, dwLastSystemTime;
+	static double dCPULoad;
+};

