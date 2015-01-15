@@ -7,6 +7,8 @@ set(SRC
     src/Command.h
     src/Command_batch.cpp
     src/Command_batch.h
+    src/Command_exit.cpp
+    src/Command_exit.h
     src/Command_info.cpp
     src/Command_info.h
     src/Command_msgbox.cpp
