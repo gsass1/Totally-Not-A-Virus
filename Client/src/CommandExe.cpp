@@ -42,14 +42,14 @@ static Command *CreateCommandFromName(const std::string &name)
 static DWORD WINAPI ExecuteCommand(LPVOID param)
 {
 	CommandThreadParams *cmdParams = (CommandThreadParams *)param;
+	DWORD ret = 0;
 
 	Command *command = CreateCommandFromName(cmdParams->args[0]);
-	if(!command)
-		return 0;
+	if (command) {
+		ret = command->OnExecute(cmdParams->args);
+		delete command;
+	}
 
-	bool ret = command->OnExecute(cmdParams->args);
-
-	delete command;
 	delete param;
 	return ret;
 }
@@ -75,10 +75,6 @@ void CommandExe::Run(const std::tstring& cmds)
 		std::vector<std::tstring> args = Util::split(cmd, ' ');
 		args.erase(std::remove_if(args.begin(), args.end(), [&](const std::tstring &s) { return std::all_of(s.begin(), s.end(), _istspace); }), args.end());
 		if (args.size()) {
-			Command *command = CreateCommandFromName(args[0]);
-			if(!command)
-				continue;
-
 			CommandThreadParams *params = new CommandThreadParams();
 			params->args = args;
 

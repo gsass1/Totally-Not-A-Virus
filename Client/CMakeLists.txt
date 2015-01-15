@@ -25,6 +25,8 @@ set(SRC
     src/Installer.h
     src/Keylogger.cpp
     src/Keylogger.h
+    src/Logger.cpp
+    src/Logger.h
     src/Main.cpp
     src/Network.cpp
     src/Network.h

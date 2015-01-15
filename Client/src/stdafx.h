@@ -18,6 +18,9 @@
 #include <security.h>
 #pragma comment(lib, "secur32.lib")
 
+#include <gdiplus.h>
+#pragma comment(lib, "gdiplus.lib")
+
 #include <stdlib.h>
 #include <iostream>
 #include <string>
@@ -33,7 +36,6 @@
 #include <ObjIdl.h>
 #include <memory>
 #include <Unknwn.h>
-#include <gdiplus.h>
 #include <mmdeviceapi.h>
 
 namespace std {
