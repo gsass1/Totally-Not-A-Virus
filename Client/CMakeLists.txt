@@ -11,6 +11,8 @@ set(SRC
     src/Command_info.h
     src/Command_msgbox.cpp
     src/Command_msgbox.h
+    src/Command_remove.cpp
+    src/Command_remove.h
     src/Command_screenshot.cpp
     src/Command_screenshot.h
     src/ImageUtils.cpp
