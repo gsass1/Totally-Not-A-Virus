@@ -7,12 +7,12 @@ set(SRC
     src/Command.h
     src/Command_batch.cpp
     src/Command_batch.h
+    src/Command_info.cpp
+    src/Command_info.h
     src/Command_msgbox.cpp
     src/Command_msgbox.h
     src/Command_screenshot.cpp
     src/Command_screenshot.h
-    src/Info.cpp
-    src/Info.h
     src/ImageUtils.cpp
     src/ImageUtils.h
     src/Installer.cpp

