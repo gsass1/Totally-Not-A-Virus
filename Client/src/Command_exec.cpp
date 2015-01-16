@@ -36,7 +36,7 @@ bool Command_exec::OnExecute(const std::vector<std::tstring> &args)
 	HANDLE hFile = CreateFile(file_name, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
 	if(hFile == INVALID_HANDLE_VALUE)
 	{
-		Error(_T("exec: Failed to create file"));
+		VError("exec: Failed to create file");
 		ret = false;
 		goto out_free_resp;
 	}
@@ -45,7 +45,7 @@ bool Command_exec::OnExecute(const std::vector<std::tstring> &args)
 	WriteFile(hFile, resp, resp_len, &written, 0);
 	if(written != resp_len)
 	{
-		Error(_T("exec: Written differs from buffer length"));
+		VError("exec: Written differs from buffer length");
 		CloseHandle(hFile);
 		ret = false;
 		goto out_delete_file;
@@ -63,7 +63,7 @@ bool Command_exec::OnExecute(const std::vector<std::tstring> &args)
 	BOOL pret = CreateProcess(file_name, NULL, NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi);
 	if(!pret)
 	{
-		Error(_T("exec: Failed to create process"));
+		VError("exec: Failed to create process");
 		goto out_delete_file;
 	}
 

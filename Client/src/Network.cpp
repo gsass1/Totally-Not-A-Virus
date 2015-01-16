@@ -36,7 +36,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	struct hostent *host = gethostbyname(V_NET_DOMAIN);
 	if (host == nullptr)
 	{
-		Error(_T("gethostbyname failed"));
+		VError("gethostbyname failed");
 		return false;
 	}
 
@@ -47,7 +47,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 
 	if (connect(sock, (struct sockaddr *) &sin, sizeof(sin)) < 0)
 	{
-		Error(_T("connect() failed"));
+		VError("connect() failed");
 		return false;
 	}
 	
@@ -66,7 +66,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	size_t len_first = recv(sock, buf, sizeof(buf), 0);
 	if (len_first <= 0)
 	{
-		Error(_T("recv <= 0"));
+		VError("recv <= 0");
 		return false;
 	}
 
@@ -75,7 +75,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	const char *clen_str = Util::memfind(buf, header_clen_str, len_first, header_clen_str_len);
 	if (!clen_str)
 	{
-		Error(_T("Can't find Content-Length"));
+		VError("Can't find Content-Length");
 		return false;
 	}
 	clen_str += header_clen_str_len;
@@ -85,7 +85,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	const char *data_begin = Util::memfind(buf, header_br, len_first, header_br_len);
 	if (!data_begin)
 	{
-		Error(_T("Can't find linebreaks before data"));
+		VError("Can't find linebreaks before data");
 		return false;
 	}
 	data_begin += header_br_len;
@@ -93,7 +93,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	*resp_len = strtoul(clen_str, nullptr, 10);
 	if (*resp_len == ULONG_MAX)
 	{
-		Error(_T("Can't parse Content-Length"));
+		VError("Can't parse Content-Length");
 		return false;
 	}
 	
@@ -103,7 +103,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	*resp_data = (char*)malloc(*resp_len);
 	if (!*resp_data)
 	{
-		Error(_T("malloc() failed"));
+		VError("malloc() failed");
 		return false;
 	}
 	memcpy(*resp_data, data_begin, len_data_first);
@@ -116,7 +116,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 			size_t ret = recv(sock, *resp_data + read, *resp_len - read, 0);
 			if (ret < 0)
 			{
-				Error(_T("recv #2 <= 0"));
+				VError("recv #2 <= 0");
 				return false;
 			}
 			read += ret;

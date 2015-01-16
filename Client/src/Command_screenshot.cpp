@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Command_screenshot.h"
+
 #include "Settings.h"
+#include "Logger.h"
 #include "Network.h"
 #include "ImageUtils.h"
 
@@ -21,7 +23,7 @@ bool Command_screenshot::OnExecute(const std::vector<std::tstring> &args)
 	FILE *fp;
 	errno_t error = _tfopen_s(&fp, V_FAKE_TMP1, _T("rb"));
 	if(error != 0) {
-		Error(_T("_tfopen failed"));
+		VLog(LERROR, "_tfopen failed");
 		ret = false;
 		goto out_delete_file;
 	}
@@ -33,14 +35,14 @@ bool Command_screenshot::OnExecute(const std::vector<std::tstring> &args)
 	char* buffer = (char*)malloc(size);
 	if(!buffer)
 	{
-		Error(_T("Couldn't allocate buffer"));
+		VLog(LERROR, "Couldn't allocate buffer");
 		ret = false;
 		goto out_close_fp;
 	}
 
 	if(fread_s(buffer, size, 1, size, fp) != size)
 	{
-		Error(_T("fread_s did not return size"));
+		VLog(LERROR, "fread_s did not return size");
 		ret = false;
 		goto out_free_buffer;
 	}

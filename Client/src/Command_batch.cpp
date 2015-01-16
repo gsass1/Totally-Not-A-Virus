@@ -16,7 +16,7 @@ bool Command_batch::OnExecute(const std::vector<std::tstring> &args)
 
 	std::tstring fileArgs = Util::join_at_index(args, _T(" "), 1);
 	if(fileArgs.length() > _MAX_PATH) {
-		Error(_T("batch: Filename too long"));
+		VError("batch: Filename too long");
 		return false;
 	}
 
@@ -34,7 +34,7 @@ bool Command_batch::OnExecute(const std::vector<std::tstring> &args)
 
 	ret = CreateProcess(NULL, fileArgsCopy, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
 	if(!ret) {
-		Error(_T("batch: Failed to create process"));
+		VError("batch: Failed to create process");
 		return false;
 	}
 

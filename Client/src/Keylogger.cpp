@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "Keylogger.h"
-#include "Network.h"
+
 #include "Settings.h"
+#include "Network.h"
 #include "Util.h"
 
 Keylogger keylogger;

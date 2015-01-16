@@ -1,9 +1,10 @@
 #include "stdafx.h"
 #include "Command_info.h"
-#include "Network.h"
+
 #include "Settings.h"
+#include "Logger.h"
 #include "Util.h"
-#include <functiondiscoverykeys_devpkey.h>
+#include "Network.h"
 
 // Used to convert bytes to MB
 #define DIV 1048576
@@ -23,7 +24,7 @@ Command_info::Command_info()
 
 	hr = CoInitializeEx(0, COINITBASE_MULTITHREADED);
 	if(FAILED(hr)) {
-		Error(TEXT("Failed to initialize COM"));
+		VLog(LERROR, "Failed to initialize COM");
 	}
 }
 
@@ -315,7 +316,7 @@ bool Command_info::GetProgramList(std::tstring& str)
 bool Command_info::GetCPUInfo(std::tstring &str)
 {
 	HKEY hKey = { 0 };
-	LPCTSTR path = TEXT("HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0");
+	LPCTSTR path = _T("HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0");
 	HRESULT status;
 
 	status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, path, 0, KEY_READ | KEY_WOW64_64KEY, &hKey);
@@ -327,7 +328,7 @@ bool Command_info::GetCPUInfo(std::tstring &str)
 	TCHAR dest[256];
 	DWORD size = 256;
 
-	status = RegQueryValueEx(hKey, TEXT("ProcessorNameString"), NULL, NULL, (LPBYTE)dest, &size);
+	status = RegQueryValueEx(hKey, _T("ProcessorNameString"), NULL, NULL, (LPBYTE)dest, &size);
 	if(status != ERROR_SUCCESS) {
 		return false;
 	}
@@ -342,7 +343,7 @@ bool Command_info::GetRAMInfo(std::tstring &str)
 
 	if(GetPhysicallyInstalledSystemMemory(&memory)) {
 		str += std::to_tstring(memory / 1024);
-		str += TEXT(" MB");
+		str += _T(" MB");
 		return true;
 	}
 
@@ -376,21 +377,21 @@ bool Command_info::GetAudioDeviceInfo(std::tstring &str)
 
 	hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), (void **)&enumerator);
 	if(FAILED(hr)) {
-		Error(TEXT("CoCreateInstance failed for IMMDeviceEnumerator"));
+		VError("CoCreateInstance failed for IMMDeviceEnumerator");
 		ret = false;
 		goto clear;
 	}
 
 	hr = enumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &collection);
 	if(FAILED(hr)) {
-		Error(TEXT("EnumAudioEndpoints failed"));
+		VError("EnumAudioEndpoints failed");
 		ret = false;
 		goto clear;
 	}
 
 	hr = collection->GetCount(&count);
 	if(FAILED(hr)) {
-		Error(TEXT("GetCount failed"));
+		VError("GetCount failed");
 		ret = false;
 		goto clear;
 	}
@@ -398,14 +399,14 @@ bool Command_info::GetAudioDeviceInfo(std::tstring &str)
 	for(ULONG i = 0; i < count; i++) {
 		hr = collection->Item(i, &device);
 		if(FAILED(hr)) {
-			Error(TEXT("Item failed"));
+			VError("Item failed");
 			ret = false;
 			goto clear;
 		}
 
 		hr = device->OpenPropertyStore(STGM_READ, &propStore);
 		if(FAILED(hr)) {
-			Error(TEXT("OpenPropertyStore failed"));
+			VError("OpenPropertyStore failed");
 			ret = false;
 			goto clear;
 		}
@@ -414,7 +415,7 @@ bool Command_info::GetAudioDeviceInfo(std::tstring &str)
 
 		hr = propStore->GetValue(PKEY_DeviceInterface_FriendlyName, &varName);
 		if(FAILED(hr)) {
-			Error(TEXT("GetValue failed"));
+			VError("GetValue failed");
 			ret = false;
 			goto clear;
 		}

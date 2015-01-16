@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "ImageUtils.h"
+
 #include "Util.h"
 
 using namespace Gdiplus;

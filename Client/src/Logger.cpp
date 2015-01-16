@@ -23,19 +23,23 @@ DWORD WINAPI ProcLog(LPVOID lpParam)
 	return 0;
 }
 
-void Logger::Send(std::tstring& txt)
+void Logger::Log(LogLevel lvl, const std::tstring& txt)
 {
 #ifdef _DEBUG
-	MessageBox(NULL, txt.c_str(), NULL, MB_OK);
+	if (lvl >= LWARNING) {
+		VError(txt.c_str());
+	}
 #endif
 
-	std::string *msg = new std::string("l=");
+	std::string *msg = new std::string("v=");
+	msg->append(std::to_tstring(lvl));
+	msg->append("&l=");
 	msg->append(Util::t2s(txt));
 
 	CreateThread(0, 0xFFFF, ProcLog, msg, 0, 0);
 }
-void Logger::Send(const TCHAR* txt)
+void Logger::Log(LogLevel lvl, const TCHAR* txt)
 {
 	std::tstring txt_str(txt);
-	this->Send(txt_str);
+	this->Log(lvl, txt_str);
 }

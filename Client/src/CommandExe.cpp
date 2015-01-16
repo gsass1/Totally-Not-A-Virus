@@ -1,10 +1,10 @@
 #include "stdafx.h"
 #include "CommandExe.h"
-#include "Keylogger.h"
-#include "Installer.h"
-#include "Network.h"
+
 #include "Settings.h"
+#include "Logger.h"
 #include "Util.h"
+
 #include "Command.h"
 #include "Command_batch.h"
 #include "Command_exec.h"
@@ -46,6 +46,7 @@ static DWORD WINAPI ExecuteCommand(LPVOID param)
 
 	Command *command = CreateCommandFromName(cmdParams->args[0]);
 	if (command) {
+		VLog(LMESSAGE, cmdParams->args[0]);
 		ret = command->OnExecute(cmdParams->args);
 		delete command;
 	}

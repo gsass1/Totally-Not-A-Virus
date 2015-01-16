@@ -37,6 +37,7 @@
 #include <memory>
 #include <Unknwn.h>
 #include <mmdeviceapi.h>
+#include <functiondiscoverykeys_devpkey.h>
 
 namespace std {
 	typedef std::basic_string<TCHAR, std::char_traits<TCHAR>, std::allocator<TCHAR> > tstring;
@@ -48,11 +49,8 @@ namespace std {
 #endif
 }
 
-class Logger;
-extern Logger logger;
 #ifdef _DEBUG
-#define Error(msg) do{logger.Send(msg);}while(0)
+#define VError(msg) MessageBox(NULL, _T(msg), NULL, MB_OK)
 #else
-#define Error(msg)
+#define VError(msg)
 #endif
-#include "Logger.h"

