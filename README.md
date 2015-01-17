@@ -22,6 +22,7 @@ The software should only be used for educational purposes.
 * Key logging & screenshots
 * Copies itself into autostart locations
 * Remote command execution
+* Remote error log
 * Great web interface with user overview and command console
 
 ## Remote command execution
