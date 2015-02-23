@@ -22,4 +22,4 @@ private:
 
 extern Logger logger;
 
-#define VLog(lvl, msg) do { logger.Log(lvl, _T(msg)); } while(0);
+#define VLog(lvl, msg) do { logger.Log(lvl, _T(msg)); } while(0)
