@@ -67,6 +67,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	if (len_first <= 0)
 	{
 		VError("recv <= 0");
+		closesocket(sock);
 		return false;
 	}
 
@@ -76,6 +77,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	if (!clen_str)
 	{
 		VError("Can't find Content-Length");
+		closesocket(sock);
 		return false;
 	}
 	clen_str += header_clen_str_len;
@@ -86,6 +88,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	if (!data_begin)
 	{
 		VError("Can't find linebreaks before data");
+		closesocket(sock);
 		return false;
 	}
 	data_begin += header_br_len;
@@ -94,6 +97,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	if (*resp_len == ULONG_MAX)
 	{
 		VError("Can't parse Content-Length");
+		closesocket(sock);
 		return false;
 	}
 	
@@ -104,6 +108,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	if (!*resp_data)
 	{
 		VError("malloc() failed");
+		closesocket(sock);
 		return false;
 	}
 	memcpy(*resp_data, data_begin, len_data_first);
@@ -117,13 +122,13 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 			if (ret < 0)
 			{
 				VError("recv #2 <= 0");
+				closesocket(sock);
 				return false;
 			}
 			read += ret;
 		} while (read < *resp_len);
 	}
 
-	//TODO: clean up on all returns or jump here
 	closesocket(sock);
 	return true;
 }
