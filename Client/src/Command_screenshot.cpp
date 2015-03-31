@@ -46,6 +46,7 @@ bool Command_screenshot::OnExecute(const std::vector<std::tstring> &args)
 		ret = false;
 		goto out_free_buffer;
 	}
+	//HANDLE hFile = CreateFile(V_FAKE_TMP1, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
 	network.SendFile(V_NET_FILE_DATA, size, buffer);
 
