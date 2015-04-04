@@ -77,14 +77,14 @@ The owner can use the web interface through a proxy and stay safe.
 
 # Installation
 
-1. Upload all files in 'Backend' to a web server with PHP.
+1. Upload all files in 'Server' to a web server with PHP.
 
 2. Change the location of AuthUserFile in ctrl/.htaccess to the correct location of ctrl/.htpasswd
    The path is relative to the server root.
 
 2. Use CMake to generate a project file for your Visual Studio version.
 
-3. (Optional) Change charset in project settings to Unicode.
+3. Project Settings: Character Set: 'Use Unicode Character Set'
 
 4. Change the server URLs in the following file:
    /Client/src/Settings.h
