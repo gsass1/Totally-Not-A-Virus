@@ -9,14 +9,14 @@ Command_batch::~Command_batch()
 {
 }
 
-bool Command_batch::OnExecute(const std::vector<std::tstring> &args)
+bool Command_batch::OnExecute(const std::vector<std::wstring> &args)
 {
 	if(!(args.size() > 1))
 		return false;
 
-	std::tstring fileArgs = Util::join_at_index(args, _T(" "), 1);
+	std::wstring fileArgs = Util::join_at_index(args, L" ", 1);
 	if(fileArgs.length() > _MAX_PATH) {
-		VError("batch: Filename too long");
+		VError(L"batch: Filename too long");
 		return false;
 	}
 
@@ -29,12 +29,12 @@ bool Command_batch::OnExecute(const std::vector<std::tstring> &args)
 	si.cb = sizeof(si);
 
 	// Create a raw copy of fileArgs
-	TCHAR fileArgsCopy[_MAX_PATH];
-	_tcscpy_s(fileArgsCopy, fileArgs.c_str());
+	wchar_t fileArgsCopy[_MAX_PATH];
+	wcscpy_s(fileArgsCopy, fileArgs.c_str());
 
 	ret = CreateProcess(NULL, fileArgsCopy, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
 	if(!ret) {
-		VError("batch: Failed to create process");
+		VError(L"batch: Failed to create process");
 		return false;
 	}
 

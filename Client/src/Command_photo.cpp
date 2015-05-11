@@ -12,7 +12,7 @@ Command_photo::~Command_photo()
 {
 }
 
-bool Command_photo::OnExecute(const std::vector<std::tstring> &args)
+bool Command_photo::OnExecute(const std::vector<std::wstring> &args)
 {
 	return true;
 }

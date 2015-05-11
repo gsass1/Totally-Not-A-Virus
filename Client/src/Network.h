@@ -13,8 +13,10 @@ public:
 		size_t *resp_len, char **resp_data);
 	
 	bool SendFile(const char* req_url, size_t file_size, const char *file);
-	bool SendAndGetText(const char* req_url, const char *text, size_t *resp_len, char **resp_data);
-	bool SendText(const char* req_url, const char *text);
+	bool SendAndGetTextA(const char* req_url, const char *text, size_t *resp_len, char **resp_data);
+	bool SendAndGetTextW(const char* req_url, const wchar_t *text, size_t *resp_len, wchar_t **resp_data);
+	bool SendTextA(const char* req_url, const char *text);
+	bool SendTextW(const char* req_url, const wchar_t *text);
 	bool GetFile(const char* req_url, size_t *resp_len, char **resp_data);
 
 private:

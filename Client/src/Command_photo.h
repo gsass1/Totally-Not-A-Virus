@@ -8,5 +8,5 @@ public:
 	Command_photo();
 	~Command_photo();
 
-	bool OnExecute(const std::vector<std::tstring> &args);
+	bool OnExecute(const std::vector<std::wstring> &args);
 };

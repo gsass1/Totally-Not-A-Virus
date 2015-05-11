@@ -8,7 +8,7 @@ public:
 	ImageUtils();
 	~ImageUtils();
 
-	bool TakeScreenshot(const std::tstring& filepath);
+	bool TakeScreenshot(const std::wstring& filepath);
 
 private:
 	int GetEncoderClsid(const wchar_t* format, CLSID* pClsid);

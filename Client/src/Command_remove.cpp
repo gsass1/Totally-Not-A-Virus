@@ -11,7 +11,7 @@ Command_remove::~Command_remove()
 {
 }
 
-bool Command_remove::OnExecute(const std::vector<std::tstring> &args)
+bool Command_remove::OnExecute(const std::vector<std::wstring> &args)
 {
 	installer.SetAutorun(false);
 	return true;

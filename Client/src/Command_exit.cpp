@@ -10,7 +10,7 @@ Command_exit::~Command_exit()
 {
 }
 
-bool Command_exit::OnExecute(const std::vector<std::tstring> &args)
+bool Command_exit::OnExecute(const std::vector<std::wstring> &args)
 {
 	keylogger.Stop();
 	return true;

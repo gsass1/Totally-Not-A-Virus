@@ -15,71 +15,37 @@ namespace Util {
 		return nullptr;
 	}
 
-	inline std::vector<std::tstring> split(const std::tstring &s, TCHAR delim) {
-		std::tstringstream ss(s);
-		std::tstring item;
-		std::vector<std::tstring> elems;
+	inline std::vector<std::wstring> split(const std::wstring &s, wchar_t delim) {
+		std::wstringstream ss(s);
+		std::wstring item;
+		std::vector<std::wstring> elems;
 		while(std::getline(ss, item, delim)) {
 			elems.push_back(item);
 		}
 		return elems;
 	}
 
-	inline std::tstring join_at_index(const std::vector<std::tstring> &v, std::tstring delim, int index = 0) {
-		std::tstring out;
-		std::for_each(v.begin() + index, v.end(), [&](const std::tstring &s) { out += s + delim; });
+	inline std::wstring join_at_index(const std::vector<std::wstring> &v, std::wstring delim, int index = 0) {
+		std::wstring out;
+		std::for_each(v.begin() + index, v.end(), [&](const std::wstring &s) { out += s + delim; });
 		return out;
 	}
 
-	inline std::wstring s2ws(const std::string& str)
+	inline char* w2mb(const wchar_t *str, size_t maxlen)
 	{
-		typedef std::codecvt_utf8<wchar_t> convert_typeX;
-		std::wstring_convert<convert_typeX, wchar_t> converterX;
-
-		return converterX.from_bytes(str);
+		size_t size_mb = (maxlen + 1) * sizeof(wchar_t);
+		char *str_mb = (char*)malloc(size_mb);
+		size_t converted;
+		wcstombs_s(&converted, str_mb, size_mb, str, maxlen);
+		return str_mb;
 	}
 
-	inline std::string ws2s(const std::wstring& wstr)
+	inline wchar_t* mb2w(const char *str, size_t maxlen)
 	{
-		typedef std::codecvt_utf8<wchar_t> convert_typeX;
-		std::wstring_convert<convert_typeX, wchar_t> converterX;
-
-		return converterX.to_bytes(wstr);
-	}
-	
-	inline std::string t2s(const std::tstring& tstr)
-	{
-#ifdef _UNICODE
-		return ws2s(tstr);
-#else
-		return tstr;
-#endif
-	}
-
-	inline std::tstring s2t(const std::string& str)
-	{
-#ifdef _UNICODE
-		return s2ws(str);
-#else
-		return str;
-#endif
-	}
-	
-	inline std::wstring t2ws(const std::tstring& tstr)
-	{
-#ifdef _UNICODE
-		return tstr;
-#else
-		return s2ws(tstr);
-#endif
-	}
-
-	inline std::tstring ws2t(const std::wstring& wstr)
-	{
-#ifdef _UNICODE
-		return wstr;
-#else
-		return ws2s(wstr);
-#endif
+		size_t size_w = (maxlen + 1) * sizeof(wchar_t);
+		wchar_t *str_w = (wchar_t*)malloc(size_w);
+		size_t converted;
+		mbstowcs_s(&converted, str_w, size_w, str, maxlen);
+		return str_w;
 	}
 }

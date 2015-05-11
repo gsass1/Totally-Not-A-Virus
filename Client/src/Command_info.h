@@ -8,25 +8,25 @@ public:
 	Command_info();
 	~Command_info();
 
-	bool OnExecute(const std::vector<std::tstring> &args);
+	bool OnExecute(const std::vector<std::wstring> &args);
 
 private:
-	void GetInformation(std::tstring& str);
-	bool GetOSVersion(std::tstring& str);
-	bool GetProcessInfoStr(DWORD processID, std::tstring& str);
-	bool EnumerateProcesses(std::tstring& str);
-	bool GetHostname(std::tstring& str);
-	bool GetTime(std::tstring &str);
-	bool GetMemoryStatus(std::tstring& str);
-	bool GetUsernameReal(std::tstring& str);
-	bool GetUsernameLogin(std::tstring& str);
-	bool GetProgramList(std::tstring& str);
-	bool GetCPUInfo(std::tstring &str);
-	bool GetRAMInfo(std::tstring &str);
-	bool GetDisplayDeviceInfo(std::tstring &str);
-	bool GetAudioDeviceInfo(std::tstring &str);
+	void GetInformation(std::wstring& str);
+	bool GetOSVersion(std::wstring& str);
+	bool GetProcessInfoStr(DWORD processID, std::wstring& str);
+	bool EnumerateProcesses(std::wstring& str);
+	bool GetHostname(std::wstring& str);
+	bool GetTime(std::wstring &str);
+	bool GetMemoryStatus(std::wstring& str);
+	bool GetUsernameReal(std::wstring& str);
+	bool GetUsernameLogin(std::wstring& str);
+	bool GetProgramList(std::wstring& str);
+	bool GetCPUInfo(std::wstring &str);
+	bool GetRAMInfo(std::wstring &str);
+	bool GetDisplayDeviceInfo(std::wstring &str);
+	bool GetAudioDeviceInfo(std::wstring &str);
 
-	static bool GetCPULoad(std::tstring& str);
+	static bool GetCPULoad(std::wstring& str);
 
 	static DWORD dwLastProcessTime, dwLastSystemTime;
 	static double dCPULoad;

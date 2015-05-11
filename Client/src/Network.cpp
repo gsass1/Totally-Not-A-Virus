@@ -15,8 +15,8 @@ Network::~Network()
 }
 
 bool Network::Send(const char *req_method, const char *req_url, const char *req_type,
-				   size_t req_num_parts, size_t *req_data_len, const char **req_data,
-				   size_t *resp_len, char **resp_data)
+					size_t req_num_parts, size_t *req_data_len, const char **req_data,
+					size_t *resp_len, char **resp_data)
 {
 	static const char* headers_proto =
 		"%s " V_NET_BASE "%s HTTP/1.1\r\n"
@@ -36,18 +36,18 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	struct hostent *host = gethostbyname(V_NET_DOMAIN);
 	if (host == nullptr)
 	{
-		VError("gethostbyname failed");
+		VError(L"gethostbyname failed");
 		return false;
 	}
 
 	SOCKADDR_IN sin;
 	sin.sin_addr.s_addr = *((unsigned long*)host->h_addr);
 	sin.sin_family = AF_INET;
-	sin.sin_port = htons(80);
+	sin.sin_port = htons(V_NET_PORT);
 
 	if (connect(sock, (struct sockaddr *) &sin, sizeof(sin)) < 0)
 	{
-		VError("connect() failed");
+		VError(L"connect() failed");
 		return false;
 	}
 	
@@ -66,7 +66,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	size_t len_first = recv(sock, buf, sizeof(buf), 0);
 	if (len_first <= 0)
 	{
-		VError("recv <= 0");
+		VError(L"recv <= 0");
 		closesocket(sock);
 		return false;
 	}
@@ -76,7 +76,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	const char *clen_str = Util::memfind(buf, header_clen_str, len_first, header_clen_str_len);
 	if (!clen_str)
 	{
-		VError("Can't find Content-Length");
+		VError(L"Can't find Content-Length");
 		closesocket(sock);
 		return false;
 	}
@@ -87,7 +87,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	const char *data_begin = Util::memfind(buf, header_br, len_first, header_br_len);
 	if (!data_begin)
 	{
-		VError("Can't find linebreaks before data");
+		VError(L"Can't find linebreaks before data");
 		closesocket(sock);
 		return false;
 	}
@@ -96,7 +96,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	*resp_len = strtoul(clen_str, nullptr, 10);
 	if (*resp_len == ULONG_MAX)
 	{
-		VError("Can't parse Content-Length");
+		VError(L"Can't parse Content-Length");
 		closesocket(sock);
 		return false;
 	}
@@ -107,7 +107,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	*resp_data = (char*)malloc(*resp_len);
 	if (!*resp_data)
 	{
-		VError("malloc() failed");
+		VError(L"malloc() failed");
 		closesocket(sock);
 		return false;
 	}
@@ -121,8 +121,9 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 			size_t ret = recv(sock, *resp_data + read, *resp_len - read, 0);
 			if (ret < 0)
 			{
-				VError("recv #2 <= 0");
+				VError(L"recv #2 <= 0");
 				closesocket(sock);
+				free(resp_data);
 				return false;
 			}
 			read += ret;
@@ -161,7 +162,7 @@ bool Network::SendFile(const char* req_url, size_t file_size, const char *file)
 		3, req_data_len, req_data,
 		nullptr, nullptr);
 }
-bool Network::SendAndGetText(const char* req_url, const char *text, size_t *resp_len, char **resp_data)
+bool Network::SendAndGetTextA(const char* req_url, const char *text, size_t *resp_len, char **resp_data)
 {
 	size_t req_data_len[1] = {
 		strlen(text)
@@ -175,9 +176,30 @@ bool Network::SendAndGetText(const char* req_url, const char *text, size_t *resp
 		1, req_data_len, req_data,
 		resp_len, resp_data);
 }
-bool Network::SendText(const char* req_url, const char *text)
+bool Network::SendAndGetTextW(const char* req_url, const wchar_t *text, size_t *resp_len, wchar_t **resp_data)
 {
-	return this->SendAndGetText(req_url, text, nullptr, nullptr);
+	char *text_mb = Util::w2mb(text, wcslen(text));
+	size_t resp_len_mb;
+	char *resp_data_mb;
+
+	bool ret = this->SendAndGetTextA(req_url, text_mb, &resp_len_mb, &resp_data_mb);
+
+	*resp_data = Util::mb2w(resp_data_mb, resp_len_mb);
+	*resp_len = wcslen(*resp_data);
+	free(resp_data_mb);
+	free(text_mb);
+	return ret;
+}
+bool Network::SendTextA(const char* req_url, const char *text)
+{
+	return this->SendAndGetTextA(req_url, text, nullptr, nullptr);
+}
+bool Network::SendTextW(const char* req_url, const wchar_t *text)
+{
+	char *text_mb = Util::w2mb(text, wcslen(text));
+	bool ret = this->SendTextA(req_url, text_mb);
+	free(text_mb);
+	return ret;
 }
 bool Network::GetFile(const char* req_url, size_t *resp_len, char **resp_data)
 {

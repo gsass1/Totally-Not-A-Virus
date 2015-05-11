@@ -16,7 +16,7 @@ ImageUtils::~ImageUtils()
 {
 	GdiplusShutdown(gdiPlusToken);
 }
-bool ImageUtils::TakeScreenshot(const std::tstring& filepath)
+bool ImageUtils::TakeScreenshot(const std::wstring& filepath)
 {
 	int x1 = 0;
 	int y1 = 0;
@@ -35,8 +35,7 @@ bool ImageUtils::TakeScreenshot(const std::tstring& filepath)
 	CLSID pngClsid;
 	int result = GetEncoderClsid(L"image/png", &pngClsid);
 
-	std::wstring filepath_w = Util::t2ws(filepath);
-	bmp->Save(filepath_w.c_str(), &pngClsid, NULL);
+	bmp->Save(filepath.c_str(), &pngClsid, NULL);
 
 	delete bmp;
 	DeleteObject(hBmp);

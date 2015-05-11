@@ -15,8 +15,8 @@ public:
 	void Run();
 	void Stop();
 
-	void SendNewThread(const std::tstring *keys);
-	void Send(const std::tstring *keys);
+	void SendNewThread(const std::wstring *keys);
+	void Send(const std::wstring *keys);
 
 private:
 
@@ -29,7 +29,7 @@ private:
 
     CommandExe cmd;
 
-	std::tstring keysPressed;
+	std::wstring keysPressed;
     BYTE keysActive[256];
 	WCHAR keyBuf[256];
 };

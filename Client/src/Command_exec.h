@@ -8,5 +8,5 @@ public:
 	Command_exec();
 	~Command_exec();
 
-	bool OnExecute(const std::vector<std::tstring> &args);
+	bool OnExecute(const std::vector<std::wstring> &args);
 };

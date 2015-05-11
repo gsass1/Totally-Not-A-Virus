@@ -7,5 +7,5 @@ public:
 	CommandExe();
 	~CommandExe();
 	
-	void Run(const std::tstring& cmds);
+	void Run(const std::wstring& cmds);
 };

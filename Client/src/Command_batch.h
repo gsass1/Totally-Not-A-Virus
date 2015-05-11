@@ -8,5 +8,5 @@ public:
 	Command_batch();
 	~Command_batch();
 
-	bool OnExecute(const std::vector<std::tstring> &args);
+	bool OnExecute(const std::vector<std::wstring> &args);
 };

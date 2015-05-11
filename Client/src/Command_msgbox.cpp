@@ -11,12 +11,12 @@ Command_msgbox::~Command_msgbox()
 {
 }
 
-bool Command_msgbox::OnExecute(const std::vector<std::tstring> &args)
+bool Command_msgbox::OnExecute(const std::vector<std::wstring> &args)
 {
 	if(!(args.size() > 1))
 		return false;
 
-	std::tstring text = Util::join_at_index(args, _T(" "), 1);
+	std::wstring text = Util::join_at_index(args, L" ", 1);
 
 	MessageBox(NULL, text.c_str(), NULL, MB_OK);
 	return true;

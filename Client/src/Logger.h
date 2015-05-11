@@ -14,12 +14,12 @@ public:
 	Logger();
 	~Logger();
 
-	void Log(LogLevel lvl, const std::tstring& txt);
-	void Log(LogLevel lvl, const TCHAR* txt);
+	void Log(LogLevel lvl, const std::wstring& txt);
+	void Log(LogLevel lvl, const wchar_t* txt);
 private:
 	
 };
 
 extern Logger logger;
 
-#define VLog(lvl, msg) do { logger.Log(lvl, _T(msg)); } while(0)
+#define VLog(lvl, msg) do { logger.Log(lvl, msg); } while(0)

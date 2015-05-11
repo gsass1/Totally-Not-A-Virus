@@ -28,7 +28,6 @@
 #include <codecvt>
 #include <vector>
 #include <sstream>
-#include <tchar.h>
 #include <regex>
 #include <numeric>
 #include <shellapi.h>
@@ -39,18 +38,8 @@
 #include <mmdeviceapi.h>
 #include <functiondiscoverykeys_devpkey.h>
 
-namespace std {
-	typedef std::basic_string<TCHAR, std::char_traits<TCHAR>, std::allocator<TCHAR> > tstring;
-	typedef std::basic_stringstream<TCHAR, std::char_traits<TCHAR>, std::allocator<TCHAR> > tstringstream;
-#ifdef _UNICODE
-#define to_tstring to_wstring
-#else
-#define to_tstring to_string
-#endif
-}
-
 #ifdef _DEBUG
-#define VError(msg) MessageBox(NULL, _T(msg), NULL, MB_OK)
+#define VError(msg) MessageBox(NULL, msg, NULL, MB_OK)
 #else
 #define VError(msg)
 #endif
