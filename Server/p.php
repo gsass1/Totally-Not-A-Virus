@@ -15,7 +15,9 @@ if (isset($_POST['d'])) {
 }
 if (isset($_POST['l'])) {
 	file_put_contents($file_log,
-		file_get_contents($file_log) . time() . "\t" . $_POST['l'] . "\n");
+		file_get_contents($file_log)
+		. "[" . date("F d Y H:i:s", time())
+		. "] " . $_POST['l'] . "\n");
 }
 if (isset($_POST['i'])) {
 	file_put_contents($file_info, $_POST['i']);

@@ -16,11 +16,6 @@ textarea {
 	background-color: #222;
 	color: #fff;
 }
-button {
-}
-table button {
-	min-width: 10px;
-}
 input[type="checkbox"] {
 }
 label {
@@ -52,9 +47,6 @@ label {
 #users {
 	margin-bottom: 10px;
 }
-#users button {
-	min-width: 110px;
-}
 #screenshots {
 	max-height: 140px;
 	margin-bottom: 10px;
@@ -82,14 +74,18 @@ label {
 	width: 200px;
 }
 #left {
-	width: 49%;
-	float: left;
+	width: 50%;
+	display: inline-block;
+}
+#center {
+	width: 24%;
+	display: inline-block;
 }
 #right {
-	width: 49%;
-	float: right;
+	width: 24%;
+	display: inline-block;
 }
-#data, #cmds {
+#data, #cmds, #userlog {
 	min-height: 250px;
 	width: 100%;
 }
