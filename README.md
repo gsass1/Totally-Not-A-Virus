@@ -30,7 +30,7 @@ The software should only be used for educational purposes.
 
 The communication with the server is bi-directional;
 the server can transmit commands to the program which will be executed quickly.
-The commands can be entered in the backend terminal.
+The commands can be entered in the backend console.
 
 * "batch" - Execute a Windows command
 
@@ -47,19 +47,19 @@ The commands can be entered in the backend terminal.
   Usage: ```msgbox <text>```
 
 
-* "screenshot" - Takes a screenshot and then sends it back
+* "screenshot" - Take a screenshot and send it to the server
 
 
   Usage: ```screenshot```
 
 
-* "remove" - Removes the virus from autostart
+* "remove" - Remove the virus from autostart
 
 
   Usage: ```remove```
 
 
-* "exit" - Stops the program
+* "exit" - Stop the program
 
 
   Usage: ```exit```
