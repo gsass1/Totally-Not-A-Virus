@@ -8,6 +8,7 @@ $dir_screenshots = '../screenshots/';
 $dir_files = '../files/';
 $dir_info = '../info/';
 $dir_log = '../log/';
+$dir_ls = '../ls/';
 
 function pv($var) {
 	if (!isset($_POST[$var])) die();
@@ -142,6 +143,9 @@ else if ($req === 'upload_file') {
 	
 	$uploadfile = $dir_files.basename($_FILES['file']['name']);
 	move_uploaded_file($_FILES['file']['tmp_name'], $uploadfile);
+	
+	header('Location: ctrl.html');
+	exit;
 }
 else if ($req === 'del_file') {
 	$file = pv('file');

@@ -1,6 +1,8 @@
 #include "Command_batch.h"
 #include "stdafx.h"
 
+#include "Logger.h"
+
 Command_batch::Command_batch()
 {
 }
@@ -12,11 +14,14 @@ Command_batch::~Command_batch()
 bool Command_batch::OnExecute(const std::vector<std::wstring> &args)
 {
 	if(!(args.size() > 1))
+	{
+		VLog(LERROR, L"batch: missing argument");
 		return false;
+	}
 
 	std::wstring fileArgs = Util::join_at_index(args, L" ", 1);
 	if(fileArgs.length() > _MAX_PATH) {
-		VError(L"batch: Filename too long");
+		VLog(LERROR, L"batch: filename too long");
 		return false;
 	}
 
@@ -34,7 +39,7 @@ bool Command_batch::OnExecute(const std::vector<std::wstring> &args)
 
 	ret = CreateProcess(NULL, fileArgsCopy, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
 	if(!ret) {
-		VError(L"batch: Failed to create process");
+		VLog(LERROR, L"batch: Failed to create process");
 		return false;
 	}
 

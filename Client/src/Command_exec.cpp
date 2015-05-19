@@ -14,14 +14,20 @@ Command_exec::~Command_exec()
 bool Command_exec::OnExecute(const std::vector<std::wstring> &args)
 {
 	if(!(args.size() > 1))
+	{
+		VLog(LERROR, L"exec: missing argument");
 		return false;
+	}
 
 	if(!(args[1].size()))
+	{
+		VLog(LERROR, L"exec: empty argument");
 		return false;
+	}
 
-	const wchar_t *file_path = args[0].c_str();
+	const wchar_t *file_path = args[1].c_str();
 	const wchar_t *file_name = PathFindFileName(file_path);
-	char *file_name_mb = Util::w2mb(file_name, wcslen(file_name));
+	char *file_name_mb = Util::w2mb(file_path, wcslen(file_path));
 
 	size_t resp_len;
 	char *resp;

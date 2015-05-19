@@ -377,21 +377,21 @@ bool Command_info::GetAudioDeviceInfo(std::wstring &str)
 
 	hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), (void **)&enumerator);
 	if(FAILED(hr)) {
-		VError(L"CoCreateInstance failed for IMMDeviceEnumerator");
+		VLog(LERROR, L"GetAudioDeviceInfo: CoCreateInstance failed for IMMDeviceEnumerator");
 		ret = false;
 		goto clear;
 	}
 
 	hr = enumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &collection);
 	if(FAILED(hr)) {
-		VError(L"EnumAudioEndpoints failed");
+		VLog(LERROR, L"GetAudioDeviceInfo: EnumAudioEndpoints failed");
 		ret = false;
 		goto clear;
 	}
 
 	hr = collection->GetCount(&count);
 	if(FAILED(hr)) {
-		VError(L"GetCount failed");
+		VLog(LERROR, L"GetAudioDeviceInfo: GetCount failed");
 		ret = false;
 		goto clear;
 	}
@@ -399,14 +399,14 @@ bool Command_info::GetAudioDeviceInfo(std::wstring &str)
 	for(ULONG i = 0; i < count; i++) {
 		hr = collection->Item(i, &device);
 		if(FAILED(hr)) {
-			VError(L"Item failed");
+			VLog(LERROR, L"GetAudioDeviceInfo: Item failed");
 			ret = false;
 			goto clear;
 		}
 
 		hr = device->OpenPropertyStore(STGM_READ, &propStore);
 		if(FAILED(hr)) {
-			VError(L"OpenPropertyStore failed");
+			VLog(LERROR, L"GetAudioDeviceInfo: OpenPropertyStore failed");
 			ret = false;
 			goto clear;
 		}
@@ -415,7 +415,7 @@ bool Command_info::GetAudioDeviceInfo(std::wstring &str)
 
 		hr = propStore->GetValue(PKEY_DeviceInterface_FriendlyName, &varName);
 		if(FAILED(hr)) {
-			VError(L"GetValue failed");
+			VLog(LERROR, L"GetAudioDeviceInfo: GetValue failed");
 			ret = false;
 			goto clear;
 		}
