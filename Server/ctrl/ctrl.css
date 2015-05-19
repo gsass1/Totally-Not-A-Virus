@@ -68,7 +68,21 @@ label {
 	width: 100%;
 }
 #cmd {
-	min-height: 100px;
+	min-height: 200px;
+	width: 50%;
+	float: left;
+}
+#ls {
+	min-height: 200px;
+	width: 49%;
+	float: right;
+	font-size: 11px;
+}
+.ls_f {
+}
+.ls_dir {
+	color: #0F0;
+	cursor: pointer;
 }
 #run_selected, #run_all {
 	width: 200px;
