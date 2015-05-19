@@ -23,6 +23,7 @@ The software should only be used for educational purposes.
 * Copies itself into autostart locations
 * Remote command execution
 * Remote error log
+* File Manager
 * Great web interface with user overview and command console
 
 ## Remote command execution
@@ -62,6 +63,9 @@ The commands can be entered in the backend terminal.
 
 
   Usage: ```exit```
+
+Other internal commands include ```ls```, ```rm```, ```dl``` and ```ul```.
+They are used by the file manager.
 
 Multiple commands are separated with a semicolon.
 

@@ -183,8 +183,6 @@ function update_ls() {
 	}
 	
 	if (num == 0) {
-		get_ls(l_selected);
-	} else {
 		l_dir_update = true;
 	}
 }
@@ -250,8 +248,8 @@ function select_user(index) {
 		view_userlog(index);
 		if (update) {
 			l_dir = l_dir_default;
-			get_ls(index);
 		}
+		get_ls(index);
 	}
 }
 function get_data(index) {
