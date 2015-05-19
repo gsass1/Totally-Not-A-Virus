@@ -33,16 +33,18 @@ const char* Util::memfind(const char *data, const char *find, size_t data_len, s
 
 	return nullptr;
 }
-
 char* Util::w2mb(const wchar_t *str, size_t maxlen)
 {
 	size_t size_mb = (maxlen + 1) * sizeof(wchar_t);
 	char *str_mb = (char*)malloc(size_mb);
-	size_t converted;
-	wcstombs_s(&converted, str_mb, size_mb, str, maxlen);
-	return str_mb;
+	int ret = WideCharToMultiByte(CP_UTF8, 0, str, maxlen, str_mb, size_mb, NULL, NULL);
+	if (ret)
+	{
+		str_mb[ret] = '\0';
+		return str_mb;
+	}
+	return NULL;
 }
-
 wchar_t* Util::mb2w(const char *str, size_t maxlen)
 {
 	size_t size_w_words = (maxlen + 1);
