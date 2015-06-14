@@ -70,7 +70,7 @@ bool Command_exec::OnExecute(const std::vector<std::wstring> &args)
 	BOOL pret = CreateProcess(file_name, NULL, NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi);
 	if(!pret)
 	{
-		VError(L"exec: Failed to create process");
+		VLog(LERROR, L"exec: Failed to create process");
 		goto out_delete_file;
 	}
 
