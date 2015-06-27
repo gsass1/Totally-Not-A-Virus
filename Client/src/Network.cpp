@@ -2,6 +2,7 @@
 #include "Network.h"
 #include "Settings.h"
 #include "Util.h"
+#include "Tor.h"
 
 Network network;
 
@@ -20,7 +21,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 {
 	static const char* headers_proto =
 		"%s " V_NET_BASE "%s HTTP/1.1\r\n"
-		"Host: " V_NET_DOMAIN "\r\n"
+		"Host: " V_NET_DOMAIN_ONION "\r\n"
 		"Content-Type: %s\r\n"
 		"Content-Length: %u\r\n\r\n";
 
@@ -33,23 +34,24 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 
 	SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
 
-	struct hostent *host = gethostbyname(V_NET_DOMAIN);
-	if (host == nullptr)
-	{
-		VError(L"gethostbyname failed");
-		return false;
-	}
-
 	SOCKADDR_IN sin;
-	sin.sin_addr.s_addr = *((unsigned long*)host->h_addr);
+	memset(&sin, 0, sizeof(sin));
 	sin.sin_family = AF_INET;
-	sin.sin_port = htons(V_NET_PORT);
+	sin.sin_addr.s_addr = inet_addr("127.0.0.1");
+	sin.sin_port = htons(9050); // 9050 should be the port for tor
 
 	if (connect(sock, (struct sockaddr *) &sin, sizeof(sin)) < 0)
 	{
 		VError(L"connect() failed");
 		return false;
 	}
+
+	if(!SOCKS5Login(sock)) {
+		return false;
+	}
+
+	if(!SOCKS5Connect(sock, V_NET_DOMAIN_ONION, 80))
+		return 1;
 	
 	send(sock, buf, strlen(buf), 0);
 

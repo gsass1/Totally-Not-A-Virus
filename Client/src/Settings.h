@@ -7,6 +7,9 @@
 // Domain of your web server, e.g. example.org
 #define V_NET_DOMAIN "einbaum.org"
 
+// Domain of your onion web server
+#define V_NET_DOMAIN_ONION "r7p5lpny2qi2n6eb.onion"
+
 // Subfolder where your files are located.
 // Example 1:
 //   Your p.php is in example.org/files/test/p.php

