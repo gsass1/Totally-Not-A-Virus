@@ -37,11 +37,17 @@ set(SRC
     src/Network.cpp
     src/Network.h
     src/Settings.h
+    src/Tor.cpp
+    src/Tor.h
+    src/resource.h
     src/stdafx.cpp
     src/stdafx.h
     src/targetver.h
     src/Util.cpp
     src/Util.h
+    src/version.rc
+
+	src/External/miniz.c
 )
 
 set(LIBS
