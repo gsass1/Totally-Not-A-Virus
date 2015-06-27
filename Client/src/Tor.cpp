@@ -326,6 +326,9 @@ void TOR_Init()
 
 	CreateProcessA(torExePath, "", NULL, NULL, FALSE, 0, NULL, extractFilePath, &si, &pi);
 
+	/* Sleep for 10 seconds to let Tor initialize itself */
+	Sleep(10000);
+
 	TorProcessCreated = true;
 
 	/* Cleanup */
