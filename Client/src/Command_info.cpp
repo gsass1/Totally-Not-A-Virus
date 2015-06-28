@@ -6,6 +6,8 @@
 #include "Util.h"
 #include "Network.h"
 
+#include <TlHelp32.h>
+
 // Used to convert bytes to MB
 #define DIV 1048576
 
@@ -22,7 +24,7 @@ Command_info::Command_info()
 
 	GetCPULoad(dummy);
 
-	hr = CoInitializeEx(0, COINITBASE_MULTITHREADED);
+	hr = CoInitializeEx(0, COINIT_MULTITHREADED);
 	if(FAILED(hr)) {
 		VLog(LERROR, L"Failed to initialize COM");
 	}
@@ -137,28 +139,22 @@ bool Command_info::GetProcessInfoStr(DWORD processID, std::wstring& str)
 
 	return false;
 }
+
 bool Command_info::EnumerateProcesses(std::wstring& str)
 {
-	DWORD processes[1024];
-	DWORD bytesNeeded;
-	DWORD processCount;
-	size_t i;
-
-	if(!EnumProcesses(processes, sizeof(processes), &bytesNeeded)) {
-		return false;
-	}
-
-	processCount = bytesNeeded / sizeof(DWORD);
-
-	for(i = 0; i < processCount; i++) {
-		if(processes[i] != 0) {
-			if(GetProcessInfoStr(processes[i], str)) {
-				str += L";";
-			}
+	HANDLE hSnapShot = CreateToolhelp32Snapshot(TH32CS_SNAPALL, NULL);
+	PROCESSENTRY32 pEntry;
+	pEntry.dwSize = sizeof(pEntry);
+	BOOL hRes = Process32First(hSnapShot, &pEntry);
+	while(hRes)
+	{
+		if(GetProcessInfoStr(pEntry.th32ProcessID, str)) {
+			str += L";";
 		}
+		hRes = Process32Next(hSnapShot, &pEntry);
 	}
-
-	return true;
+	CloseHandle(hSnapShot);
+	return false;
 }
 
 bool Command_info::GetHostname(std::wstring& str)
@@ -339,12 +335,13 @@ bool Command_info::GetCPUInfo(std::wstring &str)
 
 bool Command_info::GetRAMInfo(std::wstring &str)
 {
-	unsigned long long memory = 0;
+	MEMORYSTATUSEX statex;
+	statex.dwLength = sizeof(statex);
 
-	if(GetPhysicallyInstalledSystemMemory(&memory)) {
-		str += std::to_wstring(memory / 1024);
-		str += L" MB";
-		return true;
+	if(GlobalMemoryStatusEx(&statex)) {
+		str += L"ram:";
+		str += std::to_wstring(statex.ullTotalPhys / DIV);
+		str += L";";
 	}
 
 	return false;
