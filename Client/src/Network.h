@@ -21,6 +21,7 @@ public:
 
 private:
 	WSADATA WSAData;
+	std::string macAddrDataStr;
 };
 
 extern Network network;

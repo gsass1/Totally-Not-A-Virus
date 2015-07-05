@@ -51,9 +51,22 @@ set(SRC
 )
 
 set(LIBS
+	iphlpapi.lib
     secur32.lib
     ws2_32.lib
 )
+
+if(CMAKE_GENERATOR_TOOLSET STREQUAL "v120_xp")
+	set(BUILDXP TRUE)
+endif()
+
+if(MINGW)
+	set(BUILDXP TRUE)
+endif()
+
+if(BUILDXP)
+	list(APPEND LIBS "psapi.lib")
+endif()
 
 add_executable(Hax ${SRC})
 target_link_libraries(Hax ${LIBS})
@@ -62,4 +75,8 @@ add_definitions("-DUNICODE -D_UNICODE")
 
 if(MSVC)
     set_target_properties(Hax PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
+	FOREACH(flag_var CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+            CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+        STRING(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+    ENDFOREACH(flag_var)
 endif()

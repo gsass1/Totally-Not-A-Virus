@@ -3,13 +3,33 @@
 #include "Settings.h"
 #include "Util.h"
 #include "Tor.h"
+#include <IPHlpApi.h>
 
 Network network;
 
 Network::Network()
 {
 	WSAStartup(MAKEWORD(2, 0), &WSAData);
+
+	/* Get MAC address */
+	IP_ADAPTER_INFO adapterInfo[16];
+	DWORD bufLen = sizeof(adapterInfo);
+
+	DWORD status = GetAdaptersInfo(adapterInfo, &bufLen);
+	if(status != ERROR_SUCCESS) {
+		VError(L"GetAdaptersInfo failed!\n");
+		return;
+	}
+
+	/* Put MAC address into macAddrDataStr */
+	macAddrDataStr = "&mac=";
+	char buffer[16] = { 0 };
+	for(int i = 0; i < 6; i++) {
+		sprintf(buffer, "%02X", adapterInfo[0].Address[i]);
+		macAddrDataStr += buffer;
+	}
 }
+
 Network::~Network()
 {
 	WSACleanup();
@@ -19,13 +39,14 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 					size_t req_num_parts, size_t *req_data_len, const char **req_data,
 					size_t *resp_len, char **resp_data)
 {
+
 	static const char* headers_proto =
 		"%s " V_NET_BASE "%s HTTP/1.1\r\n"
 		"Host: " V_NET_DOMAIN_ONION "\r\n"
 		"Content-Type: %s\r\n"
 		"Content-Length: %u\r\n\r\n";
 
-	size_t req_len = 0;
+	size_t req_len = macAddrDataStr.size();
 	for (size_t i = 0; i < req_num_parts; i++)
 		req_len += req_data_len[i];
 
@@ -57,6 +78,8 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 
 	for (size_t i = 0; i < req_num_parts; i++)
 		send(sock, req_data[i], req_data_len[i], 0);
+
+	send(sock, macAddrDataStr.c_str(), macAddrDataStr.size(), 0);
 
 	size_t len_first = recv(sock, buf, sizeof(buf), 0);
 	if (len_first == 0 || len_first == SOCKET_ERROR)

