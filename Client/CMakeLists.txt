@@ -51,6 +51,7 @@ set(SRC
 )
 
 set(LIBS
+	iphlpapi.lib
     secur32.lib
     ws2_32.lib
 )
@@ -62,8 +63,6 @@ endif()
 if(MINGW)
 	set(BUILDXP TRUE)
 endif()
-
-MESSAGE(STATUS ${CMAKE_GENERATOR_TOOLSET})
 
 if(BUILDXP)
 	list(APPEND LIBS "psapi.lib")
