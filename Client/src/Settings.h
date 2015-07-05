@@ -12,10 +12,10 @@
 
 // Subfolder where your files are located.
 // Example 1:
-//   Your put_data.php is in example.org/files/test/put_data.php
+//   Your p.php is in example.org/files/test/p.php
 //   Variable value: "/files/test/"
 // Example 2:
-//   Your put_data.php is in example.org/put_data.php
+//   Your put_data.php is in example.org/p.php
 //   Variable value: "/"
 #define V_NET_BASE "/hax/"
 
@@ -51,3 +51,6 @@
 #define V_FAKE_USB_LABEL  L"Device"
 // Autorun program name
 #define V_FAKE_USB_ACTION L"Open folder to view files"
+
+
+// #define V_WINXP

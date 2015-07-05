@@ -6,6 +6,8 @@ var dir_files_2 = 'files/';
 
 var l_dir_default = 'C:\\';
 
+var c_log_length = 2000;
+
 var l_users = [];
 var l_times = [];
 var l_selected = -1;
@@ -13,6 +15,7 @@ var l_screenshots = [];
 var l_dir = l_dir_default;
 var l_dir_update = true;
 var l_dir_data = null;
+var l_dir_num = 0;
 var b_screenshots_shown = false;
 
 var $selected_user = null;
@@ -96,7 +99,10 @@ function convert_mode_notime(txt) {
 	return txt;
 }
 function log(msg) {
-	$log.get(0).value += msg + '\n';
+	var val = $log.get(0).value;
+	val += msg + '\n';
+	val = val.substring(val.length - c_log_length);
+	$log.get(0).value = val;
 	$log.scrollTop($log[0].scrollHeight);
 }
 function set_data(data) {
@@ -122,8 +128,12 @@ function set_userlog(data) {
 }
 
 function get_ls(index) {
+	if (l_dir_num == 0 && $cmds.val().lastIndexOf('ls '+l_dir+';') < 0) {
+		l_dir_update = true;
+	}
 	if (l_dir_update) {
 		l_dir_update = false;
+		log('ls: requesting: '+l_dir);
 		$.ajax({
 			type: 'POST',
 			url: ctrl,
@@ -136,12 +146,16 @@ function get_ls(index) {
 		set_ls(data);
 		log('Fetched ls for ' + l_users[index]);
 	});
+	
+	update_ls();
 }
 function update_ls() {
 	$ls.empty();
 	
+	if (!l_dir_data) return;
+	
 	var files = l_dir_data.split('\n');
-	var num = 0;
+	var l_dir_num = 0;
 	
 	for (var i = 0; i < files.length; i++) {
 		var file = files[i].split('|');
@@ -179,17 +193,12 @@ function update_ls() {
 		}
 		$ls.append($c);
 		
-		num++;
-	}
-	
-	if (num == 0) {
-		l_dir_update = true;
+		l_dir_num++;
 	}
 }
 function set_ls(data) {
 
 	l_dir_data = data;
-	
 	update_ls();
 }
 function refresh_users() {
