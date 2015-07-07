@@ -80,3 +80,5 @@ if(MSVC)
         STRING(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
     ENDFOREACH(flag_var)
 endif()
+
+add_custom_command(TARGET Hax PRE_BUILD COMMAND ${CMAKE_SOURCE_DIR}/Scripts/Prebuild.bat)
