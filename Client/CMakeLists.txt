@@ -54,6 +54,11 @@ set(LIBS
 	iphlpapi.lib
     secur32.lib
     ws2_32.lib
+
+	${CMAKE_SOURCE_DIR}/lib/x86/libcurl.x86.lib
+	${CMAKE_SOURCE_DIR}/lib/x86/libssh2.x86.lib
+	${CMAKE_SOURCE_DIR}/lib/x86/openssl.x86.lib
+	${CMAKE_SOURCE_DIR}/lib/x86/zlib.x86.lib
 )
 
 if(CMAKE_GENERATOR_TOOLSET STREQUAL "v120_xp")
@@ -67,6 +72,8 @@ endif()
 if(BUILDXP)
 	list(APPEND LIBS "psapi.lib")
 endif()
+
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
 add_executable(Hax ${SRC})
 target_link_libraries(Hax ${LIBS})
