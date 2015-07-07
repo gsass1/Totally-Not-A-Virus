@@ -78,6 +78,8 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 add_executable(Hax ${SRC})
 target_link_libraries(Hax ${LIBS})
 
+set_target_properties(Hax PROPERTIES OUTPUT_NAME "Hax")
+
 add_definitions("-DUNICODE -D_UNICODE")
 
 if(MSVC)
@@ -89,3 +91,10 @@ if(MSVC)
 endif()
 
 add_custom_command(TARGET Hax PRE_BUILD COMMAND ${CMAKE_SOURCE_DIR}/Scripts/Prebuild.bat)
+
+set(ONIONHOST "" CACHE STRING "Domain of your tor web server")
+set(WEBBASE "/hax/" CACHE STRING "Subfolder containing the files")
+
+add_definitions("-DV_NET_DOMAIN_ONION=\"${ONIONHOST}\"")
+add_definitions("-DV_NET_BASE=\"${WEBBASE}\"")
+

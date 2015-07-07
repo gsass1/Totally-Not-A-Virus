@@ -184,7 +184,7 @@ bool SOCKS5Connect(SOCKET fd, const char *dst, unsigned short port)
 		_snprintf(ErrorMessage, 256, "SOCKS5 connect failed, error: 0x%02X", resp.Reply);
 		WCHAR ErrorMessageW[256];
 		mbstowcs(ErrorMessageW, ErrorMessage, 256);
-		VError(ErrorMessageW);
+		//VError(ErrorMessageW);
 		return false;
 	}
 

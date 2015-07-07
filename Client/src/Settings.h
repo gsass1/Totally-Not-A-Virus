@@ -8,7 +8,9 @@
 #define V_NET_DOMAIN "einbaum.org"
 
 // Domain of your onion web server
-#define V_NET_DOMAIN_ONION "r7p5lpny2qi2n6eb.onion"
+#ifndef V_NET_DOMAIN_ONION
+	#error "Missing onion url!"
+#endif
 
 // Subfolder where your files are located.
 // Example 1:
@@ -17,7 +19,9 @@
 // Example 2:
 //   Your put_data.php is in example.org/p.php
 //   Variable value: "/"
-#define V_NET_BASE "/hax/"
+#ifndef V_NET_BASE
+	#define V_NET_BASE "/hax/"
+#endif
 
 // Web server port
 #define V_NET_PORT 80

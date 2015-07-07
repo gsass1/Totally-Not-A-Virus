@@ -72,7 +72,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	}
 
 	if(!SOCKS5Connect(sock, V_NET_DOMAIN_ONION, 80))
-		return 1;
+		return false;
 	
 	send(sock, buf, strlen(buf), 0);
 
