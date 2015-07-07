@@ -48,12 +48,16 @@ set(SRC
     src/version.rc
 
 	src/External/miniz.c
+	src/External/chunk.c
+	src/External/header.c
+	src/External/http.c
 )
 
 set(LIBS
 	iphlpapi.lib
     secur32.lib
     ws2_32.lib
+    wldap32.lib
 
 	${CMAKE_SOURCE_DIR}/lib/x86/libcurl.x86.lib
 	${CMAKE_SOURCE_DIR}/lib/x86/libssh2.x86.lib
@@ -81,6 +85,7 @@ target_link_libraries(Hax ${LIBS})
 set_target_properties(Hax PROPERTIES OUTPUT_NAME "Hax")
 
 add_definitions("-DUNICODE -D_UNICODE")
+add_definitions("-DCURL_STATICLIB")
 
 if(MSVC)
     set_target_properties(Hax PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
