@@ -93,6 +93,11 @@ The owner can use the web interface through a proxy and stay safe.
    The path is relative to the server root.
 
 2. Use CMake to generate a project file for your Visual Studio version.
+```
+$ mkdir -p build
+$ cd build
+$ cmake -DONIONHOST:STRING="YOUR_ONION_HOST" ..
+```
 
 3. Project Settings: Character Set: 'Use Unicode Character Set'
 

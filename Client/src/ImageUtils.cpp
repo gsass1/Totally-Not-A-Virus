@@ -5,6 +5,39 @@
 
 using namespace Gdiplus;
 
+/* Due to a big clusterfuck with Gdiplus */
+bool ImageUtils::SaveGdiImageToMemory(unsigned char **memDst, DWORD *size, Bitmap *bmp)
+{
+	IStream *pStream;
+	LARGE_INTEGER liZero = {};
+	ULARGE_INTEGER pos = {};
+	STATSTG stg = {};
+	ULONG bytesRead = 0;
+	HRESULT status = S_OK;
+	DWORD bufferSize;
+
+	CLSID pngClsid;
+	ImageUtils::GetEncoderClsid(L"image/png", &pngClsid);
+
+	status = CreateStreamOnHGlobal(NULL, TRUE, &pStream);
+	status = bmp->Save(pStream, &pngClsid, NULL) == 0 ? S_OK : E_FAIL;
+	status = pStream->Seek(liZero, STREAM_SEEK_SET, &pos);
+	status = pStream->Stat(&stg, STATFLAG_NONAME);
+
+	*size = bufferSize = stg.cbSize.LowPart;
+
+	*memDst = new unsigned char[bufferSize];
+	status = memDst == NULL ? E_OUTOFMEMORY : S_OK;
+
+	status = pStream->Read(*memDst, bufferSize, &bytesRead);
+
+	if(pStream) {
+		pStream->Release();
+	}
+
+	return true;
+}
+
 ImageUtils imageUtils;
 
 ImageUtils::ImageUtils()
@@ -16,7 +49,8 @@ ImageUtils::~ImageUtils()
 {
 	GdiplusShutdown(gdiPlusToken);
 }
-bool ImageUtils::TakeScreenshot(const std::wstring& filepath)
+
+bool ImageUtils::TakeScreenshot(unsigned char **buffer, DWORD *size)
 {
 	int x1 = 0;
 	int y1 = 0;
@@ -32,14 +66,12 @@ bool ImageUtils::TakeScreenshot(const std::wstring& filepath)
 
 	Bitmap *bmp = Bitmap::FromHBITMAP(hBmp, NULL);
 
-	CLSID pngClsid;
-	int result = GetEncoderClsid(L"image/png", &pngClsid);
-
-	bmp->Save(filepath.c_str(), &pngClsid, NULL);
+	if(!SaveGdiImageToMemory(buffer, size, bmp)) {
+		return false;
+	}
 
 	delete bmp;
 	DeleteObject(hBmp);
-
 	return true;
 }
 

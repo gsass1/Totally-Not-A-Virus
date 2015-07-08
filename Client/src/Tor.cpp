@@ -5,194 +5,13 @@
 #define MINIZ_HEADER_FILE_ONLY
 #include "External/miniz.c"
 
+#include <curl\curl.h>
 #include <strsafe.h>
 #include <TlHelp32.h>
 
-bool SOCKS5SendData(SOCKET fd, void *data, int len)
-{
-	char *ptr = (char *)data;
-	while(len > 0)
-	{
-		int sent = send(fd, ptr, len, 0);
-		if(sent <= 0)
-		{
-			TCHAR ErrorMessage[256];
-			_sntprintf(ErrorMessage, 255, L"send() error: %d", WSAGetLastError());
-			VError(ErrorMessage);
-			return -1;
-			return false;
-		}
-		ptr += sent;
-		len -= sent;
-	}
-
-	return true;
-}
-
-bool SOCKS5ReceiveData(SOCKET fd, void *data, int len, bool disconnectOk)
-{
-	char *ptr = (char *)data;
-	int total = 0;
-
-	while(len > 0)
-	{
-		int recvd = recv(fd, ptr, len, 0);
-		if(recvd < 0)
-		{
-			TCHAR ErrorMessage[256];
-			_sntprintf(ErrorMessage, 255, L"recv() error: %d", WSAGetLastError());
-			VError(ErrorMessage);
-			return -1;
-		}
-		if(recvd == 0)
-		{
-			if(disconnectOk)
-				break;
-			VError(L"disconnected");
-			return -1;
-		}
-		ptr += recvd;
-		len -= recvd;
-		total -= recvd;
-	}
-
-	return total;
-}
-
-bool SOCKS5Login(SOCKET fd)
-{
-	SOCKS5IdentificationRequest req;
-	SOCKS5IdentificationResponse resp;
-
-	req.Version = 5;
-	req.NumberOfMethods = 1;
-	req.Methods[0] = 0;
-
-	if(!SOCKS5SendData(fd, &req, 2 + req.NumberOfMethods)) {
-		return false;
-	}
-
-	if(SOCKS5ReceiveData(fd, &resp, sizeof(resp)) == -1) {
-		return false;
-	}
-
-	if(resp.Version != 5 || resp.Method == 0xFF) {
-		VError(L"SOCKS5 identification failed\n");
-		return false;
-	}
-
-	return true;
-}
-
-bool SOCKS5RequestConnection(SOCKET fd, const SOCKS5Request &req, SOCKS5Response &resp)
-{
-	memset(&resp, 0, sizeof(resp));
-
-	if(!SOCKS5SendData(fd, (void *)&req, 4)) {
-		return false;
-	}
-
-	switch(req.AddrType)
-	{
-		case 1:
-		{
-			if(!SOCKS5SendData(fd, (void *)&(req.DestAddr.IPv4), sizeof(in_addr)))
-				return false;
-
-			break;
-		}
-		case 3:
-		{
-			if(!SOCKS5SendData(fd, (void *)&(req.DestAddr.DomainLen), 1))
-				return false;
-
-			if(!SOCKS5SendData(fd, (void *)req.DestAddr.Domain, req.DestAddr.DomainLen))
-				return false;
-
-			break;
-		}
-
-		default:
-		{
-			/* Uhh */
-			VError(L"SOCKS 5 requesting unknown address type\n");
-			return false;
-		}
-	}
-
-	unsigned short port = htons(req.DestPort);
-	if(!SOCKS5SendData(fd, &port, 2))
-		return false;
-
-	if(SOCKS5ReceiveData(fd, &resp, 4) == -1)
-		return false;
-
-	switch(resp.AddrType)
-	{
-		case 1:
-		{
-			if(SOCKS5ReceiveData(fd, (void *)&(resp.BindAddr.IPv4), sizeof(in_addr)) == -1)
-				return false;
-
-			break;
-		}
-		case 3:
-		{
-			if(SOCKS5ReceiveData(fd, (void *)&(resp.BindAddr.DomainLen), 1) == -1)
-				return false;
-
-			if(SOCKS5ReceiveData(fd, (void *)resp.BindAddr.Domain, resp.BindAddr.DomainLen) == -1)
-				return false;
-
-			break;
-		}
-
-		default:
-		{
-			printf("SOCKS 5 bound to unknown address type");
-			return false;
-		}
-	}
-
-	if(SOCKS5ReceiveData(fd, &port, 2, 0) == -1)
-		return false;
-
-	resp.BindPort = ntohs(port);
-
-	return true;
-}
-
-bool SOCKS5Connect(SOCKET fd, const char *dst, unsigned short port)
-{
-	SOCKS5Request req;
-	SOCKS5Response resp;
-
-	req.Version = 5;
-	req.Cmd = 1;
-	req.Reserved = 0;
-	req.AddrType = 3;
-	strcpy(req.DestAddr.Domain, dst);
-	req.DestAddr.DomainLen = strlen(req.DestAddr.Domain);
-	req.DestPort = port;
-
-	if(!SOCKS5RequestConnection(fd, req, resp)) {
-		return false;
-	}
-
-	if(resp.Reply != 0) {
-		char ErrorMessage[256];
-		_snprintf(ErrorMessage, 256, "SOCKS5 connect failed, error: 0x%02X", resp.Reply);
-		WCHAR ErrorMessageW[256];
-		mbstowcs(ErrorMessageW, ErrorMessage, 256);
-		VError(ErrorMessageW);
-		return false;
-	}
-
-	return true;
-}
-
-TCHAR *TorDirectory = L"";
+TCHAR TorDirectory[MAX_PATH] = L"";
 static bool TorProcessCreated = false;
+static bool TorDirectoryFound = false;
 
 static bool IsTorProcessAlreadyRunning()
 {
@@ -212,15 +31,116 @@ static bool IsTorProcessAlreadyRunning()
 	return false;
 }
 
+static bool IsPort9050InUse()
+{
+	/* Don't know how to do this with CURL */
+
+	bool ret = false;
+	SOCKET s;
+	SOCKADDR_IN sin;
+
+	s = socket(AF_INET, SOCK_STREAM, 0);
+
+	memset(&sin, 0, sizeof(sin));
+	sin.sin_family = AF_INET;
+	sin.sin_addr.s_addr = inet_addr("127.0.0.1");
+	sin.sin_port = htons(9050);
+
+	ret = connect(s, (struct sockaddr *)&sin, sizeof(sin)) != INVALID_SOCKET;
+
+	/* If we actually connected, close connection again */
+	if(ret) {
+		closesocket(s);
+	}
+
+	return ret;
+}
+
+void FindTorDirectory(TCHAR *currentDirectory)
+{
+	/* Allocate on heap because of possible stack overflow */
+	TCHAR *search = new TCHAR[MAX_PATH];
+	search[0] = '\0';
+
+	WIN32_FIND_DATA findData;
+	HANDLE fHandle;
+
+	if(TorDirectoryFound) {
+		goto out_delete_search;
+	}
+
+	memset(&findData, 0, sizeof(findData));
+
+	StringCchCat(search, MAX_PATH, currentDirectory);
+	StringCchCat(search, MAX_PATH, L"*");
+
+	fHandle = FindFirstFile(search, &findData);
+	if(fHandle == INVALID_HANDLE_VALUE) {
+		goto out_delete_search;
+	}
+
+	while(FindNextFile(fHandle, &findData)) {
+		/* If is directory and not . or .. */
+		if(findData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY
+			&& wcscmp(findData.cFileName, L".") != 0
+			&& wcscmp(findData.cFileName, L"..") != 0) {
+
+			TCHAR newDirectory[MAX_PATH] = L"";
+
+			StringCchCat(newDirectory, MAX_PATH, currentDirectory);
+			StringCchCat(newDirectory, MAX_PATH, findData.cFileName);
+			StringCchCat(newDirectory, MAX_PATH, L"\\");
+
+			FindTorDirectory(newDirectory);
+
+		} else if(wcsicmp(findData.cFileName, L"tor.exe") == 0) {
+			StringCchCopy(TorDirectory, MAX_PATH, currentDirectory);
+			TorDirectoryFound = true;
+			goto out_delete_search;
+		}
+	}
+
+out_delete_search:
+	delete search;
+}
+
 /*	This initializes the TOR subsystem
 	First we extract the TOR.zip file from the EXE into a temp directory
 	Then we unzip that and start tor.exe
 */
 void TOR_Init()
 {
-	/* Already running? That's good. */
-	if(IsTorProcessAlreadyRunning()) {
+	/* If tor is already running and running on port 9050 then we can skip this process */
+	if(IsTorProcessAlreadyRunning() && IsPort9050InUse()) {
 		return;
+	}
+
+	TCHAR tempDirPath[MAX_PATH];
+	GetTempPath(MAX_PATH, tempDirPath);
+
+	FindTorDirectory(tempDirPath);
+	if(TorDirectoryFound) {
+		TCHAR torExePath[MAX_PATH];
+		torExePath[0] = '\0';
+
+		StringCchCat(torExePath, MAX_PATH, TorDirectory);
+		StringCchCat(torExePath, MAX_PATH, L"tor.exe");
+
+		STARTUPINFO si;
+		PROCESS_INFORMATION pi;
+
+		ZeroMemory(&si, sizeof(si));
+		si.cb = sizeof(si);
+		ZeroMemory(&pi, sizeof(pi));
+
+		/* If this fails just continue creating a new tor.exe */
+		if(CreateProcess(torExePath, L"", NULL, NULL, FALSE, 0, NULL, TorDirectory, &si, &pi)) {
+			/* Sleep for 10 seconds to let Tor initialize itself */
+			Sleep(10000);
+
+			TorProcessCreated = true;
+			return;
+		}
 	}
 
 	/* Extract TOR zip data */
@@ -285,7 +205,6 @@ void TOR_Init()
 	destPath = _wtempnam(NULL, NULL);
 	CreateDirectory(destPath, NULL);
 
-	TorDirectory = new TCHAR[MAX_PATH];
 	StringCchCopy(TorDirectory, MAX_PATH, destPath);
 
 	char torExePath[MAX_PATH];
