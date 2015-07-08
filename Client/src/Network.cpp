@@ -102,6 +102,13 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
     CURL *curl;
 	CURLcode status;
 
+	http_response r;
+	r.code = 0;
+
+	http_roundtripper rt;
+
+	std::string response;
+
     /* Add MAC parameter to req_len */
 	std::string macAddrPost = "&mac=" + macAddrDataStr;
 	size_t req_len = macAddrPost.size();
@@ -129,8 +136,6 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	}
 
 	memcpy(&req_post_data[s], macAddrPost.c_str(), macAddrPost.size());
-
-	std::string response;
 
 	status = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, req_post_data);
     if(status != CURLE_OK) {
@@ -164,10 +169,6 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 		return true;
 	}
 
-	http_response r;
-	r.code = 0;
-
-	http_roundtripper rt;
 	http_init(&rt, response_funcs, &r);
 
 	int read = 0;
@@ -195,6 +196,7 @@ bool Network::SendFile(const char* req_url, size_t file_size, const char *file)
 	curl_httppost *formpost = NULL;
 	curl_httppost *lastptr = NULL;
 	curl_slist *headerlist = NULL;
+	std::string response;
 
     curl = curl_easy_init();
     if(!curl) {
@@ -242,12 +244,9 @@ bool Network::SendFile(const char* req_url, size_t file_size, const char *file)
 
 
     /* Do not need this? */
-    /*
-	std::string response;
 
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CURLWriteToString);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-    */
 
 	status = curl_easy_perform(curl);
 	if(status != CURLE_OK) {
