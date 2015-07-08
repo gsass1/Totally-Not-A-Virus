@@ -9,8 +9,9 @@
 #include <strsafe.h>
 #include <TlHelp32.h>
 
-TCHAR *TorDirectory = L"";
+TCHAR TorDirectory[MAX_PATH] = L"";
 static bool TorProcessCreated = false;
+static bool TorDirectoryFound = false;
 
 static bool IsTorProcessAlreadyRunning()
 {
@@ -55,6 +56,54 @@ static bool IsPort9050InUse()
 	return ret;
 }
 
+void FindTorDirectory(TCHAR *currentDirectory)
+{
+	/* Allocate on heap because of possible stack overflow */
+	TCHAR *search = new TCHAR[MAX_PATH];
+	search[0] = '\0';
+
+	WIN32_FIND_DATA findData;
+	HANDLE fHandle;
+
+	if(TorDirectoryFound) {
+		goto out_delete_search;
+	}
+
+	memset(&findData, 0, sizeof(findData));
+
+	StringCchCat(search, MAX_PATH, currentDirectory);
+	StringCchCat(search, MAX_PATH, L"*");
+
+	fHandle = FindFirstFile(search, &findData);
+	if(fHandle == INVALID_HANDLE_VALUE) {
+		goto out_delete_search;
+	}
+
+	while(FindNextFile(fHandle, &findData)) {
+		/* If is directory and not . or .. */
+		if(findData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY
+			&& wcscmp(findData.cFileName, L".") != 0
+			&& wcscmp(findData.cFileName, L"..") != 0) {
+
+			TCHAR newDirectory[MAX_PATH] = L"";
+
+			StringCchCat(newDirectory, MAX_PATH, currentDirectory);
+			StringCchCat(newDirectory, MAX_PATH, findData.cFileName);
+			StringCchCat(newDirectory, MAX_PATH, L"\\");
+
+			FindTorDirectory(newDirectory);
+
+		} else if(wcsicmp(findData.cFileName, L"tor.exe") == 0) {
+			StringCchCopy(TorDirectory, MAX_PATH, currentDirectory);
+			TorDirectoryFound = true;
+			goto out_delete_search;
+		}
+	}
+
+out_delete_search:
+	delete search;
+}
+
 /*	This initializes the TOR subsystem
 	First we extract the TOR.zip file from the EXE into a temp directory
 	Then we unzip that and start tor.exe
@@ -64,6 +113,34 @@ void TOR_Init()
 	/* If tor is already running and running on port 9050 then we can skip this process */
 	if(IsTorProcessAlreadyRunning() && IsPort9050InUse()) {
 		return;
+	}
+
+	TCHAR tempDirPath[MAX_PATH];
+	GetTempPath(MAX_PATH, tempDirPath);
+
+	FindTorDirectory(tempDirPath);
+	if(TorDirectoryFound) {
+		TCHAR torExePath[MAX_PATH];
+		torExePath[0] = '\0';
+
+		StringCchCat(torExePath, MAX_PATH, TorDirectory);
+		StringCchCat(torExePath, MAX_PATH, L"tor.exe");
+
+		STARTUPINFO si;
+		PROCESS_INFORMATION pi;
+
+		ZeroMemory(&si, sizeof(si));
+		si.cb = sizeof(si);
+		ZeroMemory(&pi, sizeof(pi));
+
+		/* If this fails just continue creating a new tor.exe */
+		if(CreateProcess(torExePath, L"", NULL, NULL, FALSE, 0, NULL, TorDirectory, &si, &pi)) {
+			/* Sleep for 10 seconds to let Tor initialize itself */
+			Sleep(10000);
+
+			TorProcessCreated = true;
+			return;
+		}
 	}
 
 	/* Extract TOR zip data */
@@ -128,7 +205,6 @@ void TOR_Init()
 	destPath = _wtempnam(NULL, NULL);
 	CreateDirectory(destPath, NULL);
 
-	TorDirectory = new TCHAR[MAX_PATH];
 	StringCchCopy(TorDirectory, MAX_PATH, destPath);
 
 	char torExePath[MAX_PATH];

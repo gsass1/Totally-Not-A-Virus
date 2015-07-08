@@ -56,7 +56,7 @@ bool SOCKS5Login(SOCKET fd);
 bool SOCKS5RequestConnection(SOCKET fd, const SOCKS5Request &req, SOCKS5Response &resp);
 bool SOCKS5Connect(SOCKET fd, const char *dst, unsigned short port);
 
-extern TCHAR *TorDirectory;
+extern TCHAR TorDirectory[MAX_PATH];
 
 void TOR_Init();
 
