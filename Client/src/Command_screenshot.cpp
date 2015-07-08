@@ -25,7 +25,12 @@ bool Command_screenshot::OnExecute(const std::vector<std::wstring> &args)
 		return false;
 	}
 
-	HANDLE hFile = CreateFile(V_FAKE_TMP1, GENERIC_READ, NULL, NULL,
+    /*
+    TODO:   this sometimes fails when there are a lot of requests
+            try to open another filename
+    */
+	
+    HANDLE hFile = CreateFile(V_FAKE_TMP1, GENERIC_READ, NULL, NULL,
 		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hFile == INVALID_HANDLE_VALUE)
 	{

