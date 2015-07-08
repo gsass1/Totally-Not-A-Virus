@@ -79,6 +79,25 @@ size_t CURLWriteToString(void *ptr, size_t size, size_t count, void *stream) {
 	return dataSize;
 }
 
+struct CURLWriteDataMemoryStruct
+{
+	char *ptr;
+	size_t size;
+};
+
+size_t CURLWriteToBuffer(void *ptr, size_t size, size_t count, void *userp) {
+	size_t realsize = size * count;
+	CURLWriteDataMemoryStruct *ms = (CURLWriteDataMemoryStruct *)userp;
+
+	ms->ptr = (char *)realloc(ms->ptr, ms->size + realsize + 1);
+
+	memcpy(&(ms->ptr[ms->size]), ptr, realsize);
+	ms->size += realsize;
+	ms->ptr[ms->size] = 0;
+
+	return realsize;
+}
+
 bool InitCURLTorProxy(CURL *curl) {
 	CURLcode status;
 
@@ -116,7 +135,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	for (size_t i = 0; i < req_num_parts; i++)
 		req_len += req_data_len[i];
 
-	char *req_post_data = new char[req_len];
+	char *req_post_data = new char[req_len + 1];
 
 	curl = curl_easy_init();
 
@@ -136,6 +155,8 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 	}
 
 	memcpy(&req_post_data[s], macAddrPost.c_str(), macAddrPost.size());
+	s += macAddrPost.size();
+	req_post_data[s] = '\0'; /* \o/ */
 
 	status = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, req_post_data);
     if(status != CURLE_OK) {
@@ -325,8 +346,58 @@ bool Network::SendTextW(const char* req_url, const wchar_t *text)
 
 bool Network::GetFile(const char* req_url, size_t *resp_len, char **resp_data)
 {
-	return this->Send(
-		"GET", req_url, "application/x-www-form-urlencoded",
-		0, nullptr, nullptr,
-		resp_len, resp_data);
+	CURL *curl;
+	CURLcode status;
+	CURLWriteDataMemoryStruct response;
+	response.ptr = (char *)malloc(1);
+	response.size = 0;
+	std::string url;
+	url += "http://";
+	url += V_NET_DOMAIN_ONION;
+	url += "/";
+	url += req_url;
+	bool ret = false;
+
+	http_response r;
+	r.code = 0;
+
+	http_roundtripper rt;
+
+	curl = curl_easy_init();
+	if(!curl) {
+		goto out_free_curl;
+	}
+
+	if(!InitCURLTorProxy(curl)) {
+		goto out_free_curl;
+	}
+
+	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CURLWriteToBuffer);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+
+	status = curl_easy_perform(curl);
+	if(status != CURLE_OK) {
+		goto out_free_curl;
+	}
+
+	http_init(&rt, response_funcs, &r);
+
+	int read = 0;
+	http_data(&rt, response.ptr, response.size, &read);
+
+	*resp_data = (char *)malloc(r.body.size());
+	memcpy(*resp_data, r.body.c_str(), r.body.size());
+	*resp_len = r.body.size();
+	
+	ret = true;
+
+	delete response.ptr;
+
+out_free_curl:
+	curl_easy_cleanup(curl);
+	return ret;
 }
