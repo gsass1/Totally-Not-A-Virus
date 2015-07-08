@@ -5,6 +5,7 @@
 #define MINIZ_HEADER_FILE_ONLY
 #include "External/miniz.c"
 
+#include <curl\curl.h>
 #include <strsafe.h>
 #include <TlHelp32.h>
 
@@ -31,8 +32,27 @@ static bool IsTorProcessAlreadyRunning()
 
 static bool IsPort9050InUse()
 {
-    /* TODO */
-    return false;
+	/* Don't know how to do this with CURL */
+
+	bool ret = false;
+	SOCKET s;
+	SOCKADDR_IN sin;
+
+	s = socket(AF_INET, SOCK_STREAM, 0);
+
+	memset(&sin, 0, sizeof(sin));
+	sin.sin_family = AF_INET;
+	sin.sin_addr.s_addr = inet_addr("127.0.0.1");
+	sin.sin_port = htons(9050);
+
+	ret = connect(s, (struct sockaddr *)&sin, sizeof(sin)) != INVALID_SOCKET;
+
+	/* If we actually connected, close connection again */
+	if(ret) {
+		closesocket(s);
+	}
+
+	return ret;
 }
 
 /*	This initializes the TOR subsystem
