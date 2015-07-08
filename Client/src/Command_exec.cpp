@@ -56,7 +56,7 @@ bool Command_exec::OnExecute(const std::vector<std::wstring> &args)
 		return false;
 	}
 
-	srand(time(NULL));
+	srand((unsigned int)time(NULL));
 
 	const wchar_t *file_path = args[1].c_str();
 	const wchar_t *file_name = PathFindFileName(file_path);

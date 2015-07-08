@@ -103,7 +103,7 @@ bool InitCURLTorProxy(CURL *curl) {
 
 	status = curl_easy_setopt(curl, CURLOPT_PROXY, "127.0.0.1:9050");
 	if(status != CURLE_OK) {
-		VError(L"Couldn't init proxy: %u\n", status);
+		VError(L"Couldn't init proxy");
 		return false;
 	}
 
@@ -175,7 +175,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 
 	status = curl_easy_perform(curl);
 	if(status != CURLE_OK) {
-		VError(L"Failed to post: %u\n", status);
+		VError(L"Failed to post");
         goto out_free_curl;
     }
 
@@ -203,7 +203,7 @@ bool Network::Send(const char *req_method, const char *req_url, const char *req_
 
 out_free_curl:
     curl_easy_cleanup(curl);
-out_free_req_post_data:
+
     delete req_post_data;
     return false;
 }
